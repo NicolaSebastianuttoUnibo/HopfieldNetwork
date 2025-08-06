@@ -1,6 +1,6 @@
 #include "quadro.h"
 
-Quadro::Quadro::Quadro(std::string str, int a, int b): path_{str},w_{a},h_{b} {
+Quadro::Quadro::Quadro(std::string str, int a, int b): path_{str}{
 
 Quadro::Quadro::updatePattern(a,b);
 }

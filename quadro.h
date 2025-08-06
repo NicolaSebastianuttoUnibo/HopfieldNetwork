@@ -13,8 +13,6 @@ namespace Quadro{
 class Quadro
 {
 std::string path_;
-int w_;
-int h_;
 std::vector<int> pattern_;
 public:
   Quadro(std::string a, int b, int c);
