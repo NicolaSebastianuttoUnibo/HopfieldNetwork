@@ -50,7 +50,7 @@ string(APPEND CMAKE_EXE_LINKER_FLAGS_DEBUG " -fsanitize=address,undefined -fno-o
 
 # Aggiunge il target eseguibile. Specifica il nome dell'eseguibile e i file sorgente. 
 
-add_executable(main main.cpp HopfieldAlgorithm.cpp quadro.cpp corrotto.cpp) 
+add_executable(main main.cpp HopfieldAlgorithm.cpp quadro.cpp corrotto.cpp Pattern.cpp TantiPattern.cpp) 
 
  
 

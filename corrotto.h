@@ -14,10 +14,9 @@ std::vector<int> pattern_;
 public:
 
   Corrotto(std::vector<int> a);
- int size(){
-    return pattern_.size();
- }
-
+  Corrotto()=default;	
+  int size();
+ 
 
 };
 

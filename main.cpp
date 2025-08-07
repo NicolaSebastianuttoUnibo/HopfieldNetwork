@@ -5,6 +5,6 @@
 
 int main(){
     std::vector<int> a={2,4};
-Corrotto::Corrotto c(a);
+Corrotto::Corrotto c;
 std::cout<<c.size();
 }
