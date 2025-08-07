@@ -9,12 +9,14 @@ class Corrotto
 {
 
 std::vector<int> pattern_;
-  std::vector<int> Corrompi(std::vector<int>);
+std::vector<int> Corrompi(std::vector<int>);
+  
 
 public:
-
+  void CorrompiPixel(int index);
   Corrotto(std::vector<int> a);
   Corrotto()=default;	
+  std::vector<int>& getPattern();
   int size();
  
 

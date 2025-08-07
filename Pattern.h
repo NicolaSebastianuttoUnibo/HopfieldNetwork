@@ -6,15 +6,19 @@
 namespace Pattern{
 
 
-struct Pattern
+class Pattern
 {
-std::vector<int> arraydinamico;
-Quadro::Quadro q;
-Corrotto::Corrotto c;
-
+std::vector<int> arraydinamico_;
+Quadro::Quadro q_;
+Corrotto::Corrotto c_;
+public:
+Pattern(std::string a, int b, int c);
 void applicaPixelatura(int a, int b);
 void Corrompi();
-std::vector<int> getPattern();
+void CorrompiPixel(int pos);
+std::vector<int>& getPatternQ()  ;
+std::vector<int>& getPatternC()  ;
+std::vector<int>& getPatternD()  ;
 
 
 };

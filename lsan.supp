@@ -1,0 +1,3 @@
+leak:libGLX_mesa
+#export LSAN_OPTIONS=suppressions=./lsan.supp
+#echo 'export LSAN_OPTIONS="suppressions=/home/nicola/progetti/Hopfield/lsan.supp"' >> ~/.bashrc

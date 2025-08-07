@@ -50,19 +50,23 @@ string(APPEND CMAKE_EXE_LINKER_FLAGS_DEBUG " -fsanitize=address,undefined -fno-o
 
 # Aggiunge il target eseguibile. Specifica il nome dell'eseguibile e i file sorgente. 
 
-add_executable(main main.cpp HopfieldAlgorithm.cpp quadro.cpp corrotto.cpp Pattern.cpp TantiPattern.cpp) 
+add_executable(main main.cpp HopfieldAlgorithm.cpp quadro.cpp corrotto.cpp Pattern.cpp TantiPattern.cpp
+
+ ImGuiFileDialog/ImGuiFileDialog.cpp imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp imgui/imgui_widgets.cpp imgui/imgui_demo.cpp imgui/backends/imgui_impl_sdl2.cpp imgui/backends/imgui_impl_opengl3.cpp
+) 
 
  
 
 
 
 
-
-target_link_libraries(main) 
+find_package(SDL2 REQUIRED)
+include_directories(${SDL2_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/imgui)
+target_link_libraries(main ${SDL2_LIBRARIES} GL)
 
  
 
-# Il tuo main.cpp rimane lo stesso, non ha bisogno di modifiche. 
 
  
 
