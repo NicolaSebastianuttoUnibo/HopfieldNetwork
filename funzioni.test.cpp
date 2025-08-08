@@ -5,7 +5,7 @@
 
 double elemento_w(int j, int k, std::vector<std::vector<double>> V) {
   double result{};
-  int N{V[0].size()};
+  long unsigned int N{V[0].size()};
   for (int i{0}; i < V.size(); i++) {
     if (j == k) {
       double vuoto = {0};
@@ -16,18 +16,17 @@ double elemento_w(int j, int k, std::vector<std::vector<double>> V) {
   }
   return result;
 }
-std::vector<std::vector<double>> W(std::vector<std::vector<double>> V) {
-  int N{V[0].size()};
-  std::vector<std::vector<double>> result{0};
- std::vector<double> c{};
+std::vector<double> W(std::vector<std::vector<double>> V) {
+  long unsigned int N{V[0].size()};
+  std::vector<double> matrix(N*N);
+  
   for (int i{0}; i < N; i++) {
     for (int j{0}; j < N; j++) {
-      c.push_back(elemento_w(i, j, V)) ;//riempi un vettore dei valori che escono per ogni j e poi 
+      matrix.at(j * N + i) = elemento_w(i, j, V);
+      matrix.at(i * N + j) = matrix[j * N + i];
     }
-    result.push_back(c);//qua allinei i vettori nella matrice 
-    c.clear();//IMPORTANTE perchè altrimenti continua a costruire sullo stesso vettore e aumenta di dimensioni etc
   }
-  return result;
+  return matrix;
 }
 
 /* std::ofstream outputfile("matrice_dei_pesi");
@@ -49,12 +48,11 @@ std::vector<std::vector<double>> W(std::vector<std::vector<double>> V) {
 }*/
 TEST_CASE("W") {
   std::vector<std::vector<double>> vec = {{1, 1}, {1, 1}};
-  std::vector<std::vector<double>> vic = {{0, 1}, {1, 0}};
+  std::vector<double> vic = {0, 1, 1, 0};
   std::vector<std::vector<double>> x1 = {{-1, 1, 1, -1}, {1, -1, -1, 1}};
-  std::vector<std::vector<double>> x2 = {{0, -0.5, -0.5, 0.5},
-                                         {-0.5, 0, 0.5, -0.5},
-                                         {-0.5, 0.5, 0, -0.5},
-                                         {0.5, -0.5, -0.5, 0}};
+  std::vector<double> x2 = {0,   -0.5, -0.5, 0.5, -0.5, 0,
+                                         0.5, -0.5, -0.5, 0.5, 0,    -0.5,
+                                         0.5, -0.5, -0.5, 0};
 
   CHECK(W(vec) == vic);
   CHECK(W(x1) == x2);
