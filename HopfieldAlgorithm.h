@@ -12,8 +12,8 @@ struct HopfieldAlgorithm
 {
 
     std::vector<int> matrix;
-    void saveArrays(std::vector<std::vector<int>> array);
-    std::vector<int> disicorrompi(std::vector<int> array);
+    void saveArrays(std::vector<std::vector<int>> &array);
+    std::vector<int> disicorrompi(std::vector<int> &array);
 
 
 

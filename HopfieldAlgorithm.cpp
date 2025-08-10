@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 
-void Hopfield::HopfieldAlgorithm::saveArrays(std::vector<std::vector<int>> a) {
+void Hopfield::HopfieldAlgorithm::saveArrays(std::vector<std::vector<int>> &a) {
 
   Hopfield::HopfieldAlgorithm::matrix.clear();
 
@@ -16,7 +16,7 @@ void Hopfield::HopfieldAlgorithm::saveArrays(std::vector<std::vector<int>> a) {
 }
 
 std::vector<int>
-Hopfield::HopfieldAlgorithm::disicorrompi(std::vector<int> array) {
+Hopfield::HopfieldAlgorithm::disicorrompi(std::vector<int> &array) {
   Hopfield::HopfieldAlgorithm::matrix;
   std::vector<int> result;
   for (int i = 0; i < array.size(); i++) {
