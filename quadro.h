@@ -13,10 +13,10 @@ class Quadro {
   std::vector<int> pattern_;
 
 public:
-  Quadro(std::string &a, int &b, int &c);
+  Quadro(std::string &a, int b, int c);
   Quadro() = default;
   std::vector<int> &getPattern();
-  void updatePattern(int &a, int &b);
+  void updatePattern(int a, int b);
 };
 
 } 

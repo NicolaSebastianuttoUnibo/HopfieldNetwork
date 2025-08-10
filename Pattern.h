@@ -11,10 +11,10 @@ class Pattern {
   Corrotto::Corrotto c_;
 
 public:
-  Pattern(std::string &a, int &b, int &c);
-  void applicaPixelatura(int &a, int &b);
+  Pattern(std::string &a, int b, int c);
+  void applicaPixelatura(int a, int b);
   void Corrompi();
-  void CorrompiPixel(int &pos);
+  void CorrompiPixel(int pos);
   std::vector<int> &getPatternQ();
   std::vector<int> &getPatternC();
   std::vector<int> &getPatternD();

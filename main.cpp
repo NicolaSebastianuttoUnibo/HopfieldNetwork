@@ -11,7 +11,7 @@
 #include <string>
 
 void DrawHopfieldGridAsTable(TantiPattern::TantiPattern &tp,
-                             std::vector<int> &data, int &cols, int &rows,
+                             std::vector<int> &data, int cols, int rows,
                              float size, bool clickable, const char *unique_id,
                              int index) {
   ImDrawList *draw_list = ImGui::GetWindowDrawList();

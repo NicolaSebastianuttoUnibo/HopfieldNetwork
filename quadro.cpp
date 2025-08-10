@@ -7,7 +7,7 @@
 #include <stdexcept> // Per std::runtime_error
 #include <string>
 #include <vector>
-Quadro::Quadro::Quadro(std::string &str, int &a, int &b) : path_{str} {
+Quadro::Quadro::Quadro(std::string &str, int a, int b) : path_{str} {
 
   Quadro::Quadro::updatePattern(a, b);
 }
@@ -16,7 +16,7 @@ std::vector<int> &Quadro::Quadro::getPattern() {
   return Quadro::Quadro::pattern_;
 }
 
-void Quadro::Quadro::updatePattern(int &a, int &b) {
+void Quadro::Quadro::updatePattern(int a, int b) {
   /// questa funzione prende il path della immagine e la converte in "pixel"
   float threshold = 128.0f;
   Quadro::Quadro::pattern_.clear();

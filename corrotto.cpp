@@ -18,6 +18,6 @@ std::vector<int> &Corrotto::Corrotto::getPattern() {
   return Corrotto::Corrotto::pattern_;
 }
 
-void Corrotto::Corrotto::CorrompiPixel(int &index) {
+void Corrotto::Corrotto::CorrompiPixel(int index) {
   Corrotto::Corrotto::pattern_[index] = 1 - Corrotto::Corrotto::pattern_[index];
 }
