@@ -31,10 +31,13 @@ public:
   const TP::TrainingPattern<T>& getTrainingPattern() const noexcept;
   const NP::NoisyPattern<T>& getNoisyPattern() const noexcept;
   const EP::EvolvingPattern<T>& getEvolvingPattern() const noexcept;
+  
 
   const std::vector<T>& getTrainingPatternVector() const noexcept;
   const std::vector<T>& getNoisyPatternVector() const noexcept;
   const std::vector<T>& getEvolvingPatternVector() const noexcept;
+
+
 
   bool hasSameDimensionOf(CoherenceSetPattern& anotherCoherenceSetPattern);
 };

@@ -19,36 +19,27 @@ class HopfieldNetwork{
     const std::vector<matrix_type>& getTraining()const;
 
 
-    //Train Network
-    template<typename Iterable, typename Extractor>
-    void trainNetwork(const Iterable &patterns, const Extractor extractor){
- if (patterns.empty() || extractor(*patterns.begin()).empty()) {
-        return;
-    }
-
+   template<typename Iterable, typename Extractor>
+void trainNetwork(const Iterable &patterns, const Extractor extractor) {
+    if (patterns.empty()) {return;}
     const int numberNeurons = extractor(*patterns.begin()).size();
 
-    weightMatrix_.clear();
-weightMatrix_.assign(numberNeurons * numberNeurons, 0.0);
+    weightMatrix_.assign(numberNeurons * numberNeurons, 0.0);
 
-for (int i = 0; i < numberNeurons; ++i) {
+    for (const auto& pattern_container : patterns) {
+        const auto& p = extractor(pattern_container);
+        
+        // Aggiungi il contributo di questo pattern a tutta la matrice dei pesi
+        for (int i = 0; i < numberNeurons; ++i) {
             for (int j = i; j < numberNeurons; ++j) {
-                if (i == j) {
-                    continue;
-                }
-                else{
-                double weight_ij=std::accumulate(
-                  patterns.begin(),patterns.end(),0.0,
-                  [&](double sum, const auto& pattern){
-                    auto thisvector=extractor(pattern);
-                    return sum+(thisvector[i]*thisvector[j]);}
-                  );
-                   weightMatrix_[i+j*numberNeurons]=weight_ij;
-                   weightMatrix_[j+i*numberNeurons]=weight_ij;
-
-                }
-            }}
+                if(i==j){continue;}
+                weightMatrix_[i * numberNeurons + j] += static_cast<matrix_type>(p[i]) * p[j]/numberNeurons;
+                weightMatrix_[j * numberNeurons + i] += static_cast<matrix_type>(p[i]) * p[j]/numberNeurons;
+            
+            }
+        }
     }
+}
     
    const std::vector<neurons_type> resolvePattern(const std::vector<neurons_type>& array);
   

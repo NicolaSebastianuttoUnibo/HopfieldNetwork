@@ -19,6 +19,7 @@ template <typename neurons_type = int8_t, typename matrix_type = double>
   size_t rows_;
 
   bool isHopfieldGoing() const;
+  bool evolvable_=false;
   
 public:
   HopfieldSimulator() = default;
@@ -31,7 +32,7 @@ public:
   void removePattern(const size_t index);
   const std::vector<CSP::CoherenceSetPattern<neurons_type>>& getPatterns() const;
   void trainNetwork();
-  size_t sized();
+  size_t size();
 
 
 void resolvePattern(const int index);

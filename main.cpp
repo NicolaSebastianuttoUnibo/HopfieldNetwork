@@ -1,19 +1,17 @@
+#include "HopfieldSimulator/HopfieldNetwork.hpp"
+#include "GraphicsManager.hpp"
+#include "HopfieldSimulator/HopfieldSimulator.hpp"
+#include "HopfieldSimulator/CoherenceSetPattern.hpp"
 #include "ImGuiFileDialog/ImGuiFileDialog.h"
-#include "imgui/backends/imgui_impl_opengl3.h"
-#include "imgui/backends/imgui_impl_sdl2.h"
-#include "imgui/imgui.h"
-#include <SDL.h>
-#include <SDL_opengl.h>
-#include "Pattern.h"
-#include "TantiPattern.h"
 #include <iostream>
 #include <stdio.h>
 #include <string>
 
-void DrawHopfieldGridAsTable(TantiPattern::TantiPattern &tp,
-                             std::vector<int> &data, int cols, int rows,
+void DrawHopfieldGridAsTable(HS::HopfieldSimulator<int8_t, double> &hopSim,
+                             const std::vector<int8_t> &data, // <-- AGGIUNGI CONST QUI!
+                             int cols, int rows,
                              float size, bool clickable, const char *unique_id,
-                             int index) {
+                             int myindex) {
   ImDrawList *draw_list = ImGui::GetWindowDrawList();
 
   ImVec2 canvas_p0 = ImGui::GetCursorScreenPos();
@@ -72,193 +70,222 @@ void DrawHopfieldGridAsTable(TantiPattern::TantiPattern &tp,
                                  COLOR_HOVER);
 
         if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-          tp.corrompiPixel(index, hovered_index);
+          hopSim.flipPixelOnPattern(myindex, hovered_index);
         }
       }
     }
   }
+
 }
 
-int main(int, char **) {
 
-  // initializza SDL
-  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) !=
-      0) {
-    printf("Errore SDL: %s\n", SDL_GetError());
-    return -1;
+int main(int, char**) {
+    try {
+        GraphicsManager graphics; 
+        
+        HS::HopfieldSimulator<int8_t,double> hs;
+        int w=8;
+        int h=8;
+         int w_slider=8;
+        int h_slider=8;
+        float noise=0.1f;
+        size_t index=0;
+        bool running = true;
+        bool loadingfile = false;
+        bool is_operation_in_progress = false;
+
+
+
+        while (running) {
+            running = graphics.beginFrame();
+
+            if (running) {
+
+ const ImGuiViewport* viewport = ImGui::GetMainViewport();
+
+        ImGui::SetNextWindowPos(viewport->WorkPos);
+        ImGui::SetNextWindowSize(viewport->WorkSize);
+
+        ImGuiWindowFlags window_flags = 0;
+        window_flags |= ImGuiWindowFlags_NoTitleBar;
+        window_flags |= ImGuiWindowFlags_NoCollapse;
+        window_flags |= ImGuiWindowFlags_NoResize;     // La tua richiesta principale
+        window_flags |= ImGuiWindowFlags_NoMove;
+        window_flags |= ImGuiWindowFlags_NoSavedSettings;
+
+
+
+
+                ImGui::Begin("Rete di Hopfield");
+                ImGui::Text("Controllo rete di Hopfield");
+                ImGui::Text("Parametri:");
+                if (ImGui::SliderInt("Larghezza", &w_slider, 2, 64)) { }
+                if (ImGui::SliderInt("Altezza", &h_slider, 2, 64)) { }
+
+
+                 ImGui::BeginDisabled(is_operation_in_progress);
+                {
+if (ImGui::Button("Applica Grid")) {w=w_slider;h=h_slider; hs.regrid(w, h);}
+                }
+ ImGui::EndDisabled();
+
+
+
+                ImGui::SliderFloat("Noise", &noise, 0.0f, 1.0f); // Aggiunto .0f per coerenza
+
+                ImGui::Separator();
+
+              // All'interno del tuo loop di rendering di ImGui
+                 ImGui::BeginDisabled(is_operation_in_progress);
+                 {
+if (ImGui::Button("Open Images")) {
+    IGFD::FileDialogConfig config;
+    config.path = ".";
+    
+    // 1. ABILITA LA SELEZIONE MULTIPLA
+
+    config.countSelectionMax = 25; 
+
+    ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey_Multiple",
+                                            "Choose Image(s)",
+                                            ".png,.jpg,.jpeg,.bmp,.gif",
+                                            config);
+}
+
+// Controlla il dialogo per la selezione multipla
+if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey_Multiple")) {
+    if (ImGuiFileDialog::Instance()->IsOk()) {
+        
+    //  loadingfile=true;
+        std::map<std::string, std::string> selections = ImGuiFileDialog::Instance()->GetSelection();
+
+      
+        for (const auto& [fileName, filePath] : selections) {
+
+            try {
+                CSP::CoherenceSetPattern<int8_t> cps(filePath, w, h);
+                hs.push_back(cps);
+                // loadingfile=false;
+            } catch (const std::exception& e) {
+                 std::cerr << "Error loading " << filePath << ": " << e.what() << std::endl;
+            }
+        }
+    }
+    
+
+
+    // Chiudi il dialogo
+    ImGuiFileDialog::Instance()->Close();
+}
+                ImGui::Separator();
+                                 ImGui::BeginDisabled(is_operation_in_progress);
+                                 {
+                if (ImGui::Button("Train Hopfield Network")) {
+                    hs.trainNetwork();
+                } 
+              }
+                ImGui::EndDisabled();
+
+                ImGui::Separator(); 
   }
-  // OpenGL setiings
-  const char *glsl_version = "#version 130"; // compatibile con OpenGL 3.0+
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+ ImGui::EndDisabled();
 
-  // CREA  FINESTRA SDL + CONTESTO OPENGL
-  SDL_Window *window = SDL_CreateWindow(
-      "Rete di Hopfield", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800,
-      600, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
-  SDL_GLContext gl_context = SDL_GL_CreateContext(window);
-  SDL_GL_SetSwapInterval(1); // abilita VSync
+            
+               
+               bool imremoving=false;
+                if(hs.size()>0&&!loadingfile) {
 
-  // inizializza Dear  IMGui
-  IMGUI_CHECKVERSION();
-  ImGui::CreateContext();
-  ImGuiIO &io = ImGui::GetIO();
-  (void)io;
-  ImGui::StyleColorsDark();
+                  
 
-  // inizializza backend ImGui
-  ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
-  ImGui_ImplOpenGL3_Init(glsl_version);
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////////////////////////
+                    ImGui::Text("Stai guardando il %ld° pattern", index+1);
+                    if (ImGui::Button("<")) {
+                    
+                    
+                if(index>0){index--;}
+                }
+                    ImGui::SameLine();
+              if (ImGui::Button(">")) {
+                      if(index<hs.size()-1){index++;}
+                }
+                    ImGui::Separator();
 
-  // variabili DEMO
-  TantiPattern::TantiPattern allpatterns;
 
-  int w = 2;
-  int h = 2;
-  bool evolvable = false;
-  // --- DATI PER LA GRIGLIA ---
-  const int grid_cols = 3;
-  const int grid_rows = 3;
-  int hopfield_state[grid_cols * grid_rows] = {1, 0, 0, 1, 0, 1, 0, 1, 0};
+                               
 
-  // Loop principale:
-  bool done = false;
 
-  while (!done) {
-    SDL_Event event;
+                    ImGui::BeginGroup();
 
-    while (SDL_PollEvent(&event)) {
-      ImGui_ImplSDL2_ProcessEvent(&event);
-      if (event.type == SDL_QUIT) {
-        done = true;
-      }
-    }
-    /// inizio frame ImGUI
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplSDL2_NewFrame();
-    ImGui::NewFrame();
 
-    /// finestra GUI
-    ImGui::Begin("Controllo rete di Hopfield");
-    ImGui::Text("Parametri:");
-    if (ImGui::SliderInt("Larghezza", &w, 2, 128)) {
-      evolvable = false;
-      allpatterns.applicapixelatura(w, h);
-    }
-    if (ImGui::SliderInt("Altezza", &h, 2, 128)) {
-      evolvable = false;
+                    if (ImGui::Button("Elimina")) {
+                        hs.removePattern(index);
+                        if(hs.size()==0){index=-1;}
+                        else if(index>0){index--;}
+                        index=0;
+                        ImGui::EndGroup();
+                        imremoving=true;
+                       
+                    }
 
-      allpatterns.applicapixelatura(w, h);
-    }
-    ImGui::Separator();
-    if (ImGui::Button("Open File Dialog")) {
-      evolvable = false;
-      IGFD::FileDialogConfig config;
-      config.path = ".";
-      ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File",
-                                              ".png, .jpg, .jpeg, .bmp, .gif",
-                                              config);
-    }
-    // display
-    if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) {
-      evolvable = false;
+                     
+                  }
 
-      if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
-        std::string filePathName =
-            ImGuiFileDialog::Instance()->GetFilePathName();
-        std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
-        Pattern::Pattern pattern(filePathName, w, h);
-        allpatterns.push_back(pattern);
-      }
-      // close
-      ImGuiFileDialog::Instance()->Close();
-    }
-    ImGui::Separator();
+                                if(hs.size()>0&&!imremoving) {
 
-    if (ImGui::Button("Save Images")) {
-      allpatterns.creaMatrice();
-      evolvable = true;
-    }
+                  const auto& current_pattern_container = hs.getPatterns()[index];
 
-    // --- INIZIO CODICE GRIGLIA ---
-    ImGui::Separator(); // Aggiunge una linea di separazione per pulizia
+                    ImGui::Text("Pattern pixelato originale:");
+                    const std::vector<int8_t>& training_data = current_pattern_container.getTrainingPatternVector();
 
-    ImGui::End();
+                    DrawHopfieldGridAsTable(hs, training_data, w, h, 300.0f, false, "grid_originale", index);
+                  
+                  
+                    ImGui::EndGroup();
 
-    for (int i = 0; i < allpatterns.size(); i++) {
 
-      // All'interno del tuo ciclo, per ogni pattern 'i'
-      ImGui::Begin(("Immagine numero " + std::to_string(i + 1)).c_str());
+                    ImGui::SameLine();
 
-      ImGui::Text("La griglia della immagine e': %dx%d", w, h);
-      ImGui::Separator();
+                    ImGui::BeginGroup();
+                    if (ImGui::Button("Corrompi")) {
+                        hs.corruptPattern(index, noise);
+                    }
+                    ImGui::Text("Pattern pixelato corrotto:");
+                    const std::vector<int8_t>& noisy_data = current_pattern_container.getNoisyPatternVector();
 
-      ImGui::BeginGroup();
-      if (ImGui::Button("Elimina")) {
-        allpatterns.removePattern(i);
-        ImGui::EndGroup();
-        ImGui::End();
-        break;
-      }
+                    DrawHopfieldGridAsTable(hs, noisy_data, w, h, 300.0f, true, "grid_corrotto", index);
+                    ImGui::EndGroup();
+                    
+                    ImGui::SameLine();
 
-      ImGui::Text("Pattern pixelato originale:");
-      DrawHopfieldGridAsTable(
-          allpatterns, allpatterns.getPatterns()[i].getPatternQ(), w, h, 300.0f,
-          false, ("grid_originale" + std::to_string(i)).c_str(), i);
-      ImGui::EndGroup();
+                    ImGui::BeginGroup();
+                     ImGui::BeginDisabled(is_operation_in_progress);
+{
+                     if (ImGui::Button("Evolvi")) {
+                        hs.resolvePattern(index);
+                    }
+                  }
+                   ImGui::EndDisabled();
 
-      ImGui::SameLine();
+                    ImGui::Text("Pattern pixelato evoluzione:");
+                    const std::vector<int8_t>& evolving_data = current_pattern_container.getEvolvingPatternVector();
 
-      ImGui::BeginGroup();
-      ImGui::Text("Pattern pixelato corrotto:");
-      DrawHopfieldGridAsTable(
-          allpatterns, allpatterns.getPatterns()[i].getPatternC(), w, h, 300.0f,
-          true, ("grid_corrotta" + std::to_string(i)).c_str(), i);
-      if (ImGui::Button("Corrompi")) {
-        allpatterns.corrompi(i);
-      }
+                    DrawHopfieldGridAsTable(hs, evolving_data, w, h, 300.0f, false, "grid_evoluzione", index);
+                    ImGui::EndGroup();
+                    ImGui::Separator();
+              
+              
+                    }
 
-      ImGui::EndGroup();
+                   ImGui::End(); 
 
-      ImGui::BeginGroup();
-      ImGui::Text("Pattern pixelato evoluzione:");
-      DrawHopfieldGridAsTable(
-          allpatterns, allpatterns.getPatterns()[i].getPatternD(), w, h, 300.0f,
-          false, ("grid_evoluzione" + std::to_string(i)).c_str(), i);
-      if (ImGui::Button("Evoluzione") && evolvable) {
-        allpatterns.disicorrompi(i);
-      }
+            }
 
-      ImGui::EndGroup();
+            graphics.endFrame();
+        }
 
-      ImGui::End();
+    } catch (const std::runtime_error& e) {
+        std::cerr << "Errore critico: " << e.what() << std::endl;
+        return 1;
     }
 
-    ImGui::Render();
-    glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    SDL_GL_SwapWindow(window);
-  }
-
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-
-  // CleanUP
-  ImGui_ImplOpenGL3_Shutdown();
-  ImGui_ImplSDL2_Shutdown();
-  ImGui::DestroyContext();
-  SDL_GL_DeleteContext(gl_context);
-  SDL_DestroyWindow(window);
-  SDL_Quit();
-
-  return 0;
+    return 0;
 }

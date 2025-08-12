@@ -18,7 +18,8 @@ return false;
 
 template <typename neurons_type, typename matrix_type> 
 void HS::HopfieldSimulator<neurons_type,matrix_type>::push_back(CSP::CoherenceSetPattern<neurons_type> &pattern) {
-if(patterns_.size()>0){
+evolvable_=false;
+  if(patterns_.size()>0){
   if(!pattern.hasSameDimensionOf(*patterns_.begin())){return;}}
  patterns_.push_back(pattern);
  isStateEvolving_.push_back(false);
@@ -31,7 +32,8 @@ template <typename neurons_type, typename matrix_type>
 
 template <typename neurons_type, typename matrix_type> 
 void HS::HopfieldSimulator<neurons_type,matrix_type>::regrid(size_t numColumns, size_t numRows) {
-if(isHopfieldGoing()){return;}
+evolvable_=false;
+  if(isHopfieldGoing()){return;}
 for(auto &element : patterns_){
   element.regrid(numColumns,  numRows);
 }
@@ -61,6 +63,7 @@ return patterns_;
 template <typename neurons_type, typename matrix_type> 
 void HS::HopfieldSimulator<neurons_type,matrix_type>::removePattern(const size_t index) {
  // if(isStateEvolving_[index]==true){return;}
+evolvable_=false;
 
   if (index < patterns_.size()) {
     patterns_.erase(patterns_.begin() + index);
@@ -75,10 +78,11 @@ void HS::HopfieldSimulator<neurons_type,matrix_type>::removePattern(const size_t
 
 template <typename neurons_type, typename matrix_type> 
   void HS::HopfieldSimulator<neurons_type,matrix_type>::trainNetwork(){
+evolvable_=true;
     
 if(isHopfieldGoing()){return;}
 auto function=[](const CSP::CoherenceSetPattern<neurons_type> &csp) {
-    return csp.getEvolvingPattern().getPattern();
+    return csp.getTrainingPattern().getPattern();
 };
 
    hn_.trainNetwork(patterns_, function );
@@ -86,14 +90,20 @@ auto function=[](const CSP::CoherenceSetPattern<neurons_type> &csp) {
 
 
 template <typename neurons_type, typename matrix_type> 
-void HS::HopfieldSimulator<neurons_type,matrix_type>::resolvePattern(const int index){
-  std::vector<neurons_type> aaa=patterns_[index].getEvolvingPattern().getPattern();
-   auto newVector=hn_.resolvePattern(aaa);
-   patterns_[index].updateEvolvingState(newVector);
+  void HS::HopfieldSimulator<neurons_type,matrix_type>::resolvePattern(const int index) {
+    if (!evolvable_) { return; }
+    
+    const auto& current_evolving_vector = patterns_[index].getEvolvingPattern().getPattern();
+
+    auto newVector = hn_.resolvePattern(current_evolving_vector);
+
+    patterns_[index].updateEvolvingState(newVector);
 }
 
+  
+
 template <typename neurons_type, typename matrix_type> 
-size_t HS::HopfieldSimulator<neurons_type,matrix_type>::sized(){
+size_t HS::HopfieldSimulator<neurons_type,matrix_type>::size(){
 return patterns_.size();
 
 }
