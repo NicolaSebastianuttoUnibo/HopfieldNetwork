@@ -3,20 +3,27 @@
 #include<vector>
 #include <cstdint>
 
+
+
 namespace EP {
 
 
+template <typename T = int8_t> 
 class EvolvingPattern {
 
-  std::vector<int8_t> pattern_;
+  std::vector<T> pattern_;
 
 public:
-  EvolvingPattern(const std::vector<int8_t> &pattern);
+  EvolvingPattern(const std::vector<T> &pattern);
   EvolvingPattern() = delete;
-  const std::vector<int8_t> &getPattern() const;
-  void  updatePattern(const std::vector<int8_t> &newPattern);
+  const std::vector<T> &getPattern() const;
+  void  updatePattern(const std::vector<T> &newPattern);
 
 };
+
+template class EvolvingPattern<int8_t>;
+template class EvolvingPattern<int>;
+
 
 } //namespace EP
 

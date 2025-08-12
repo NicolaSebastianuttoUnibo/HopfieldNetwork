@@ -10,19 +10,24 @@
 #include <vector>
 #include <cstdint>
 
+
+
 //costruttore
-TP::TrainingPattern::TrainingPattern(const std::string &path, const std::size_t numColumns, const std::size_t numRows) : path_{path} {
+template <typename T> 
+TP::TrainingPattern<T>::TrainingPattern(const std::string &path, const std::size_t numColumns, const std::size_t numRows) : path_{path} {
   regrid(numColumns, numRows);
 }
 
-const std::vector<int8_t> &TP::TrainingPattern::getPattern() const{
+template <typename T> 
+const std::vector<T> &TP::TrainingPattern<T>::getPattern() const{
   return pattern_;
 }
 
 
+template <typename T> 
+void TP::TrainingPattern<T>::regrid(const std::size_t numColumns, const std::size_t numRows) {
 
-void TP::TrainingPattern::regrid(const std::size_t numColumns, const std::size_t numRows) {
-
+  ///funziona solo per int8_t
   const float threshold = 128.0f;
 
   pattern_.clear();

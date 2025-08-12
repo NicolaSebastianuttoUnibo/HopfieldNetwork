@@ -7,15 +7,16 @@
 namespace HN{
 
 
+template <typename neurons_type = int8_t, typename matrix_type = double> 
 
 class HopfieldNetwork{
     private:
-    std::vector<double> weightMatrix_ ;
+    std::vector<matrix_type> weightMatrix_ ;
 
     public:
     HopfieldNetwork() = default;
-    void setTraining(std::vector<double>& matrix);
-    const std::vector<double>& getTraining()const;
+    void setTraining(std::vector<matrix_type>& matrix);
+    const std::vector<matrix_type>& getTraining()const;
 
 
     //Train Network
@@ -49,35 +50,19 @@ for (int i = 0; i < numberNeurons; ++i) {
             }}
     }
     
-    
-    
-    //resolvePattern
-    template<typename type>
-    const std::vector<type> resolvePattern(const std::vector<type>& array){
-        
-if(array.size()* array.size()!=weightMatrix_.size()){
-        throw std::invalid_argument(("the pattern cannot be resolved due to dimensions incompatibility: m: "+std::to_string(weightMatrix_.size())+" a: "+std::to_string(array.size())).c_str());
-}
-std::vector<type> returnVector;
-
-auto iterator=array.begin();
-int sum=0;
-for (const auto &element : weightMatrix_) {
-sum+=static_cast<double>(*iterator)*element;
-  iterator++;
-
-if(iterator==array.end()){returnVector.push_back(static_cast<type>(sum>0?+1:-1));iterator=array.begin();sum=0;}
-}
-return returnVector;
+   const std::vector<neurons_type> resolvePattern(const std::vector<neurons_type>& array);
   
-    }
 
    
 };//class
 
 
-
+template class HopfieldNetwork<int8_t,float>;
+template class HopfieldNetwork<int8_t,double>;
+template class HopfieldNetwork<int,float>;
+template class HopfieldNetwork<int,double>;
 
 } //namespace HN
+
 
 #endif  //HOPFIELD_NETWORK_HPP

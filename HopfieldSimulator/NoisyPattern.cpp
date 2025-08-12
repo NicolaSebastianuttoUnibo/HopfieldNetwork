@@ -3,13 +3,17 @@
  #include <stdexcept> 
 #include <random>
 #include <cstdint>
+#include <cassert>
 
 //constructors
-NP::NoisyPattern::NoisyPattern(const std::vector<int8_t> &sourcePattern, const float noise) : pattern_(sourcePattern)  {
+template <typename T> 
+NP::NoisyPattern<T>::NoisyPattern(const std::vector<T> &sourcePattern, const float noise) : pattern_(sourcePattern)  {
+ 
   generateCorruptedPattern(noise);
 }
 
-void NP::NoisyPattern::generateCorruptedPattern(const float noise) {
+template <typename T> 
+void NP::NoisyPattern<T>::generateCorruptedPattern(const float noise) {
 if (noise < 0.0f || noise > 1.0f) {
         throw std::invalid_argument("The noise must be in the interval [0.0 , 1.0]");
     }
@@ -27,11 +31,14 @@ auto& generator = getRandomGenerator();
 }
 }
 
-const std::vector<int8_t>& NP::NoisyPattern::getPattern() const noexcept{
+template <typename T> 
+const std::vector<T>& NP::NoisyPattern<T>::getPattern() const noexcept{
   return pattern_;
 }
 
-void NP::NoisyPattern::flipPixel(const std::size_t pixelIndex) {
+
+template <typename T> 
+void NP::NoisyPattern<T>::flipPixel(const std::size_t pixelIndex) {
 if (pixelIndex>=pattern_.size()) {
 throw std::invalid_argument("pixelIndex is out of bounds.");
 }

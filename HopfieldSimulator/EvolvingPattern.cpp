@@ -2,15 +2,19 @@
 #include <vector>
 #include <cstdint>
 
-//constructor
-EP::EvolvingPattern::EvolvingPattern(const std::vector<int8_t> &pattern) : pattern_(pattern)  {}
 
-  void  EP::EvolvingPattern::updatePattern(const std::vector<int8_t> &newPattern){
+
+//constructor
+template <typename T> 
+EP::EvolvingPattern<T>::EvolvingPattern(const std::vector<T> &pattern) : pattern_(pattern)  {}
+
+template <typename T> 
+  void  EP::EvolvingPattern<T>::updatePattern(const std::vector<T> &newPattern){
   pattern_=newPattern;
   }
 
-
-const std::vector<int8_t>& EP::EvolvingPattern::getPattern() const{
+template <typename T> 
+const std::vector<T>& EP::EvolvingPattern<T>::getPattern() const{
   return pattern_;
 }
 

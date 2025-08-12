@@ -5,25 +5,30 @@
 #include <stdexcept> 
 #include <cstdint>
 
+
 namespace NP {
+
 
 inline  std::mt19937& getRandomGenerator() {
     static std::mt19937 gen(std::random_device{}()); 
     return gen;
 }
 
-
-
+template <typename T = int8_t> 
 class NoisyPattern {
 
-  std::vector<int8_t> pattern_;
-    void generateCorruptedPattern(const float noise=0.1f);
+  std::vector<T> pattern_;
+    void generateCorruptedPattern(const float noise=1.0f);
 public:
-  NoisyPattern(const std::vector<int8_t> &sourcePattern, const float noise=0.1f);
+  NoisyPattern(const std::vector<T> &sourcePattern, const float noise=1.0f);
   NoisyPattern() = delete;
   void flipPixel(const std::size_t pixelIndex);
-  const std::vector<int8_t> &getPattern() const noexcept;
+  const std::vector<T> &getPattern() const noexcept;
 };
+
+template class NoisyPattern<int8_t>;
+template class NoisyPattern<int>;
+
 
 } //namespace NP
 
