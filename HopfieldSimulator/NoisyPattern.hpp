@@ -18,9 +18,9 @@ template <typename T = int8_t>
 class NoisyPattern {
 
   std::vector<T> pattern_;
-    void generateCorruptedPattern(const float noise=1.0f);
+    void generateCorruptedPattern(const float noise=0.1f);
 public:
-  NoisyPattern(const std::vector<T> &sourcePattern, const float noise=1.0f);
+  NoisyPattern(const std::vector<T> &sourcePattern, const float noise=0.1f);
   NoisyPattern() = delete;
   void flipPixel(const std::size_t pixelIndex);
   const std::vector<T> &getPattern() const noexcept;
