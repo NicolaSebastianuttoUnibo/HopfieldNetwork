@@ -25,7 +25,7 @@ public:
   
   void push_back(CSP::CoherenceSetPattern<neurons_type>& pattern);
   void regrid(const size_t numColumns, const size_t numRows);
-  void corruptPattern(const size_t index);
+  void corruptPattern(const size_t index, const float noise=0.1f);
   void flipPixelOnPattern(const size_t index, const size_t pixelPos);
   size_t size() const;
   void removePattern(const size_t index);

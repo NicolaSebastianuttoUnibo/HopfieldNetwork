@@ -38,9 +38,9 @@ for(auto &element : patterns_){
 }
 
 template <typename neurons_type, typename matrix_type> 
-void HS::HopfieldSimulator<neurons_type,matrix_type>::corruptPattern(const size_t index) {
+void HS::HopfieldSimulator<neurons_type,matrix_type>::corruptPattern(const size_t index, const float noise) {
   if(isStateEvolving_[index]==true){return;}
-  patterns_[index].reCorrupt();
+  patterns_[index].reCorrupt(noise);
 
 }
 
