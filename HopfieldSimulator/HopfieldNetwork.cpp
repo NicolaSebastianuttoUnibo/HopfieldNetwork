@@ -1,6 +1,8 @@
 
 
 #include "HopfieldNetwork.hpp"
+#include "CoherenceSetPattern.hpp"
+#include "EvolvingPattern.hpp"
 #include<iostream>
 template <typename neurons_type, typename matrix_type> 
     void HN::HopfieldNetwork<neurons_type,matrix_type>::setTraining(std::vector<matrix_type>& matrix){
@@ -37,3 +39,65 @@ const std::vector<neurons_type> HN::HopfieldNetwork<neurons_type, matrix_type>::
 
     return evolving_state;
 }
+
+
+template <typename neurons_type, typename matrix_type>
+   float HN::HopfieldNetwork<neurons_type, matrix_type>::calculateEnergy(std::vector<neurons_type>& input){
+
+const size_t num_neurons =input.size();
+
+        if (num_neurons * num_neurons != weightMatrix_.size()) {
+
+        throw std::invalid_argument("the pattern cannot be resolved due to dimensions incompatibility: m: " + std::to_string(weightMatrix_.size()) + " a: " + std::to_string(num_neurons));
+    }
+float energy=0;
+  for (size_t i = 0; i < num_neurons; ++i) {
+  for (size_t j = i; j < num_neurons; ++j) {
+energy-=(static_cast<float>(input[i]*input[j])*static_cast<float>(weightMatrix_[i*num_neurons+j]));
+  }}
+
+    return energy;
+   }
+
+
+
+template <typename neurons_type, typename matrix_type>
+   void  HN::HopfieldNetwork<neurons_type, matrix_type>::resolvePattern(CSP::CoherenceSetPattern<neurons_type>& cps, float* status){
+//  std::vector<neurons_type> myvector=cps.getEvolvingPatternCopy().getPattern();
+ EP::EvolvingPattern<neurons_type>& ep=cps.getEvolvingPattern();
+  std::vector<neurons_type>& getVector=ep.getPattern();
+  std::vector<float>& getEnergy=ep.getEnergy();
+const size_t num_neurons =getVector.size();
+
+
+ const int totalIteration=(num_neurons)*num_neurons;
+int count=0;
+
+    if (num_neurons * num_neurons != weightMatrix_.size()) {
+
+        throw std::invalid_argument("the pattern cannot be resolved due to dimensions incompatibility: m: " + std::to_string(weightMatrix_.size()) + " a: " + std::to_string(num_neurons));
+    }
+    getEnergy.clear();
+    getEnergy.reserve(num_neurons);
+
+  for (size_t i = 0; i < num_neurons; ++i) {
+    getEnergy.push_back(calculateEnergy(getVector));
+            
+       
+        matrix_type sum = 0;
+        for (size_t j = 0; j < num_neurons; ++j) {
+
+            count++;
+               *status = static_cast<float>(count) / totalIteration;
+             sum += static_cast<matrix_type>(weightMatrix_[i * num_neurons + j]) * getVector[j];
+       
+       
+            }
+
+         getVector[i] = static_cast<neurons_type>(sum > 0 ? +1 : -1);
+    }
+
+
+  
+
+   }

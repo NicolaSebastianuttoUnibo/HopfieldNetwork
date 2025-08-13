@@ -1,21 +1,39 @@
+
 #define STB_IMAGE_IMPLEMENTATION
 
 #include "TrainingPattern.hpp"
 
 #include "../stb/stb_image.h"
+
 #include <numeric>
 #include <stdexcept>
-
 #include <string>
 #include <vector>
 #include <cstdint>
 
 
 
+void TP::StbiImageDeleter::operator()(unsigned char* data) const {
+    if (data) {
+        stbi_image_free(data);
+    }
+}
+
 //costruttore
 template <typename T> 
 TP::TrainingPattern<T>::TrainingPattern(const std::string &path, const std::size_t numColumns, const std::size_t numRows) : path_{path} {
-  regrid(numColumns, numRows);
+  
+   unsigned char* rawData = stbi_load(
+        path.c_str(), &imgWidth_, &imgHeight_, &imgChannels_, 0
+    );
+if (rawData == nullptr) {
+        throw std::runtime_error("Failed to load image from: " + path);
+    }
+
+   imageData_.reset(rawData);
+         regrid(numColumns, numRows);
+ 
+
 }
 
 template <typename T> 
@@ -27,35 +45,33 @@ const std::vector<T> &TP::TrainingPattern<T>::getPattern() const{
 template <typename T> 
 void TP::TrainingPattern<T>::regrid(const std::size_t numColumns, const std::size_t numRows) {
 
-  ///funziona solo per int8_t
+    if (numColumns == 0 || numRows == 0) {
+        throw std::invalid_argument("Number of columns and rows must be positive.");
+    }
+    if (!imageData_) {
+        throw std::runtime_error("Image data is not loaded, cannot regrid.");
+    }
+
+
   const float threshold = 128.0f;
 
-  pattern_.clear();
+   
+    pattern_.clear();
+    pattern_.reserve(numColumns * numRows);
 
-  int img_width, img_height, img_channels;
-
-  unsigned char *image_data = stbi_load(
-    path_.c_str(), &img_width, &img_height, &img_channels, 0);
-  
-      if (image_data == nullptr) {
-    throw std::runtime_error(
-        ("Errore: Impossibile caricare l'immagine: " + path_)
-            .c_str());
-  }
-  pattern_.reserve(numColumns * numRows);
-  float cell_width = static_cast<float>(img_width) / numColumns;
-  float cell_height = static_cast<float>(img_height) / numRows;
+  const float cell_width = static_cast<float>(imgWidth_) / numColumns;
+  const float cell_height = static_cast<float>(imgHeight_) / numRows;
 
   for (std::size_t r = 0; r < numRows; ++r) {
     for (std::size_t c = 0; c < numColumns; ++c) {
-      int start_x = static_cast<int>(c * cell_width);
-      int start_y = static_cast<int>(r * cell_height);
-      int end_x = static_cast<int>((c + 1) * cell_width);
-      int end_y = static_cast<int>((r + 1) * cell_height);
+      const int start_x = static_cast<int>(c * cell_width);
+      const int start_y = static_cast<int>(r * cell_height);
+       int end_x = static_cast<int>((c + 1) * cell_width);
+       int end_y = static_cast<int>((r + 1) * cell_height);
 
       //per evitare che nel conteggio si esca dall'immagine
-      end_x = std::min(end_x, img_width);
-      end_y = std::min(end_y, img_height);
+      end_x = std::min(end_x, imgWidth_);
+      end_y = std::min(end_y, imgHeight_);
 
 
       long long total_luminance = 0;
@@ -64,10 +80,10 @@ void TP::TrainingPattern<T>::regrid(const std::size_t numColumns, const std::siz
       //contiamo pixel per pixel di tutte le celle
       for (int y = start_y; y < end_y; ++y) {
         for (int x = start_x; x < end_x; ++x) {
-          unsigned char *pixel = image_data + (y * img_width + x) * img_channels;
+          unsigned char *pixel = imageData_.get() + (y * imgWidth_ + x) * imgChannels_;
           
           int luminance = 0;
-          if (img_channels >= 3) { // Se l'immagine ha colori (RGB o RGBA)
+          if (imgChannels_ >= 3) { // Se l'immagine ha colori (RGB o RGBA)
             luminance = (pixel[0] + pixel[1] + pixel[2]) / 3;
           } else { // Se l'immagine è già in scala di grigi
             luminance = pixel[0];
@@ -90,5 +106,5 @@ void TP::TrainingPattern<T>::regrid(const std::size_t numColumns, const std::siz
       }
     }
   }
-  stbi_image_free(image_data);
+
 }

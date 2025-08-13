@@ -12,12 +12,29 @@ template <typename T = int8_t>
 class EvolvingPattern {
 
   std::vector<T> pattern_;
+  std::vector<float> energy_;
+
 
 public:
   EvolvingPattern(const std::vector<T> &pattern);
   EvolvingPattern() = delete;
-  const std::vector<T> &getPattern() const;
-  void  updatePattern(const std::vector<T> &newPattern);
+  const std::vector<T>& getPattern() const {
+    return pattern_; 
+  }
+
+
+  std::vector<T>& getPattern() {
+    return pattern_; 
+  }
+  const std::vector<float>& getEnergy() const {
+    return energy_; 
+  }
+
+
+  std::vector<float>& getEnergy() {
+    return energy_; 
+  }
+
 
 };
 

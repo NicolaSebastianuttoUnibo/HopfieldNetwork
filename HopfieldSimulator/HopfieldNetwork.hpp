@@ -1,9 +1,15 @@
 #ifndef HOPFIELD_NETWORK_HPP
 #define HOPFIELD_NETWORK_HPP
-#include <stdexcept> 
 #include <vector> 
 #include <numeric> 
 #include <string> 
+#include "CoherenceSetPattern.hpp"
+
+
+namespace CSP {
+    template <typename T>
+    class CoherenceSetPattern;
+}
 namespace HN{
 
 
@@ -19,11 +25,19 @@ class HopfieldNetwork{
     const std::vector<matrix_type>& getTraining()const;
 
 
+    const std::vector<neurons_type> resolvePattern(const std::vector<neurons_type>& array);
+   void  resolvePattern(CSP::CoherenceSetPattern<neurons_type>& cps, float* status=nullptr);
+  
+   float  calculateEnergy(std::vector<neurons_type>& input);
+
    template<typename Iterable, typename Extractor>
-void trainNetwork(const Iterable &patterns, const Extractor extractor) {
+void trainNetwork(const Iterable &patterns, const Extractor extractor, float* status=nullptr) {
+   
     if (patterns.empty()) {return;}
     const int numberNeurons = extractor(*patterns.begin()).size();
 
+ const int totalIteration=(numberNeurons+1)*numberNeurons*patterns.size()/2;
+int count=0;
     weightMatrix_.assign(numberNeurons * numberNeurons, 0.0);
 
     for (const auto& pattern_container : patterns) {
@@ -32,17 +46,18 @@ void trainNetwork(const Iterable &patterns, const Extractor extractor) {
         // Aggiungi il contributo di questo pattern a tutta la matrice dei pesi
         for (int i = 0; i < numberNeurons; ++i) {
             for (int j = i; j < numberNeurons; ++j) {
+                count++;
+               *status = static_cast<float>(count) / totalIteration;
                 if(i==j){continue;}
-                weightMatrix_[i * numberNeurons + j] += static_cast<matrix_type>(p[i]) * p[j]/numberNeurons;
-                weightMatrix_[j * numberNeurons + i] += static_cast<matrix_type>(p[i]) * p[j]/numberNeurons;
+                weightMatrix_[i * numberNeurons + j] += static_cast<matrix_type>(p[i] * p[j])/static_cast<matrix_type>(numberNeurons);
+                weightMatrix_[j * numberNeurons + i] += static_cast<matrix_type>(p[i] * p[j])/static_cast<matrix_type>(numberNeurons);
             
             }
         }
     }
 }
     
-   const std::vector<neurons_type> resolvePattern(const std::vector<neurons_type>& array);
-  
+   
 
    
 };//class

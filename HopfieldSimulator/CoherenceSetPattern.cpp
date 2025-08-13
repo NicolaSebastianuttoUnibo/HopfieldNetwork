@@ -20,13 +20,13 @@ reCorrupt();
 template <typename T> 
   void CSP::CoherenceSetPattern<T>::reCorrupt(const float noise){
 np_=NP::NoisyPattern(tp_.getPattern(),noise);
-ep_.updatePattern(np_.getPattern());
+ep_.getPattern()=np_.getPattern();
   }
 
 template <typename T> 
   void CSP::CoherenceSetPattern<T>::flipNoisyPixel(std::size_t pos){
     np_.flipPixel(pos);
-    ep_.updatePattern(np_.getPattern());
+    ep_.getPattern()=np_.getPattern();
 
   }
 
@@ -35,7 +35,7 @@ template <typename T>
 if(newPattern.size()!=ep_.getPattern().size()){
           throw std::invalid_argument("You cannot change the dimension of the evolving state");
 }
-    ep_.updatePattern(newPattern);
+    ep_.getPattern()=(newPattern);
 
   }
   
@@ -55,6 +55,9 @@ template <typename T>
 return ep_;
   }
 
+
+
+
 template <typename T> 
   const std::vector<T>& CSP::CoherenceSetPattern<T>::getTrainingPatternVector() const noexcept {
 return tp_.getPattern();
@@ -68,6 +71,11 @@ return np_.getPattern();
 template <typename T> 
   const std::vector<T>& CSP::CoherenceSetPattern<T>::getEvolvingPatternVector() const noexcept{
 return ep_.getPattern();
+  }
+
+  template <typename T> 
+  const std::vector<float>& CSP::CoherenceSetPattern<T>::getEnergy() const noexcept{
+return ep_.getEnergy();
   }
 
 template <typename T> 

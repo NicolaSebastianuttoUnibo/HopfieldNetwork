@@ -18,12 +18,17 @@ return false;
 
 template <typename neurons_type, typename matrix_type> 
 void HS::HopfieldSimulator<neurons_type,matrix_type>::push_back(CSP::CoherenceSetPattern<neurons_type> &pattern) {
-evolvable_=false;
+  if(!check_){return;}
+  check_=false;
+
   if(patterns_.size()>0){
   if(!pattern.hasSameDimensionOf(*patterns_.begin())){return;}}
- patterns_.push_back(pattern);
+ patterns_.push_back((std::move(pattern)));
  isStateEvolving_.push_back(false);
+ check_=true;
 }
+
+
 
 template <typename neurons_type, typename matrix_type> 
  size_t HS::HopfieldSimulator<neurons_type,matrix_type>::size() const{
@@ -32,38 +37,47 @@ template <typename neurons_type, typename matrix_type>
 
 template <typename neurons_type, typename matrix_type> 
 void HS::HopfieldSimulator<neurons_type,matrix_type>::regrid(size_t numColumns, size_t numRows) {
-evolvable_=false;
+
+  if(!check_){return;}
+  check_=false;
   if(isHopfieldGoing()){return;}
 for(auto &element : patterns_){
   element.regrid(numColumns,  numRows);
 }
+check_=true;
 }
 
 template <typename neurons_type, typename matrix_type> 
+
 void HS::HopfieldSimulator<neurons_type,matrix_type>::corruptPattern(const size_t index, const float noise) {
   if(isStateEvolving_[index]==true){return;}
+  if(!check_){return;}
+check_=false;
   patterns_[index].reCorrupt(noise);
-
+check_=true;
 }
 
 template <typename neurons_type, typename matrix_type> 
 void HS::HopfieldSimulator<neurons_type,matrix_type>::flipPixelOnPattern(const size_t index, const size_t pos) {
- assert(isStateEvolving_[index]==false&&"problema");
+  if(!check_){return;}
+ check_=false;
  patterns_[index].flipNoisyPixel(pos);
+ check_=true;
 
 }
 
 
 template <typename neurons_type, typename matrix_type> 
 const std::vector<CSP::CoherenceSetPattern<neurons_type>>& HS::HopfieldSimulator<neurons_type,matrix_type>::getPatterns() const {
-return patterns_;
+
+  return patterns_;
 };
 
 
 template <typename neurons_type, typename matrix_type> 
 void HS::HopfieldSimulator<neurons_type,matrix_type>::removePattern(const size_t index) {
- // if(isStateEvolving_[index]==true){return;}
-evolvable_=false;
+ if(!check_){return;}
+ check_=false;
 
   if (index < patterns_.size()) {
     patterns_.erase(patterns_.begin() + index);
@@ -73,31 +87,40 @@ evolvable_=false;
   throw std::runtime_error("The pattern you want to delete doesn't exist");
 
   }
+  check_=true;
 }
 
 
 template <typename neurons_type, typename matrix_type> 
-  void HS::HopfieldSimulator<neurons_type,matrix_type>::trainNetwork(){
-evolvable_=true;
-    
+  void HS::HopfieldSimulator<neurons_type,matrix_type>::trainNetwork(float* status){
+ if(!check_){return;}
+ check_=false;    
 if(isHopfieldGoing()){return;}
 auto function=[](const CSP::CoherenceSetPattern<neurons_type> &csp) {
     return csp.getTrainingPattern().getPattern();
 };
 
-   hn_.trainNetwork(patterns_, function );
+   hn_.trainNetwork(patterns_, function,status);
+
+   check_=true;
+
 }
 
 
 template <typename neurons_type, typename matrix_type> 
-  void HS::HopfieldSimulator<neurons_type,matrix_type>::resolvePattern(const int index) {
-    if (!evolvable_) { return; }
+  void HS::HopfieldSimulator<neurons_type,matrix_type>::resolvePattern(const int index, float* status) {
+     if(patterns_.size()==0){return;}
+    const int dim = patterns_[0].getTrainingPatternVector().size();
+    if(!check_||hn_.getTraining().size()!=dim*dim){return;}
+ check_=false;
     
-    const auto& current_evolving_vector = patterns_[index].getEvolvingPattern().getPattern();
+    //  auto& current_evolving_vector = patterns_[index].getEvolvingPattern().getPatternPointer();
 
-    auto newVector = hn_.resolvePattern(current_evolving_vector);
-
-    patterns_[index].updateEvolvingState(newVector);
+    // auto newVector = hn_.resolvePattern(current_evolving_vector);
+// hn_.resolvePattern(&current_evolving_vector);
+    // patterns_[index].updateEvolvingState(newVector);
+     hn_.resolvePattern(patterns_[index], status);
+    check_=true;
 }
 
   
