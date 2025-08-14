@@ -31,10 +31,41 @@ if (rawData == nullptr) {
     }
 
    imageData_.reset(rawData);
+       calculateIntegralImage();
+
          regrid(numColumns, numRows);
  
 
 }
+
+template <typename T>
+void TP::TrainingPattern<T>::calculateIntegralImage() {
+    const std::size_t integral_width = imgWidth_ + 1;
+    const std::size_t integral_height = imgHeight_ + 1;
+    integralImage_.assign(integral_width * integral_height, 0);
+
+    for (int y = 0; y < imgHeight_; ++y) {
+        for (int x = 0; x < imgWidth_; ++x) {
+            unsigned char* pixel = imageData_.get() + (y * imgWidth_ + x) * imgChannels_;
+            
+            int luminance = 0;
+            if (imgChannels_ >= 3) { 
+                luminance = (pixel[0] + pixel[1] + pixel[2]) / 3;
+            } else { 
+                luminance = pixel[0];
+            }
+
+            
+            integralImage_[(y + 1) * integral_width + (x + 1)] = 
+                luminance + 
+                integralImage_[y * integral_width + (x + 1)] + 
+                integralImage_[(y + 1) * integral_width + x] - 
+                integralImage_[y * integral_width + x];
+        }
+    }
+}
+
+
 
 template <typename T> 
 const std::vector<T> &TP::TrainingPattern<T>::getPattern() const{
@@ -54,6 +85,7 @@ void TP::TrainingPattern<T>::regrid(const std::size_t numColumns, const std::siz
 
 
   const float threshold = 128.0f;
+    const std::size_t integral_width = imgWidth_ + 1;
 
    
     pattern_.clear();
@@ -73,27 +105,15 @@ void TP::TrainingPattern<T>::regrid(const std::size_t numColumns, const std::siz
       end_x = std::min(end_x, imgWidth_);
       end_y = std::min(end_y, imgHeight_);
 
+            long long C1 = integralImage_[start_y * integral_width + start_x];
+            long long C2 = integralImage_[start_y * integral_width + end_x];   
+            long long C3 = integralImage_[end_y * integral_width + start_x];        
+            long long C4 = integralImage_[end_y * integral_width + end_x];   
+            long long total_luminance = C4 - C2 - C3 + C1;
+            int pixel_count = (end_x - start_x) * (end_y - start_y);
 
-      long long total_luminance = 0;
-      int pixel_count = 0;
+    
 
-      //contiamo pixel per pixel di tutte le celle
-      for (int y = start_y; y < end_y; ++y) {
-        for (int x = start_x; x < end_x; ++x) {
-          unsigned char *pixel = imageData_.get() + (y * imgWidth_ + x) * imgChannels_;
-          
-          int luminance = 0;
-          if (imgChannels_ >= 3) { // Se l'immagine ha colori (RGB o RGBA)
-            luminance = (pixel[0] + pixel[1] + pixel[2]) / 3;
-          } else { // Se l'immagine è già in scala di grigi
-            luminance = pixel[0];
-          }
-
-          total_luminance += luminance;
-          pixel_count++;
-        }
-      }
-      //calcoliamo la luminosità media
       float average_luminance = 0.0f;
       if (pixel_count > 0) {
         average_luminance = static_cast<float>(total_luminance) / pixel_count;

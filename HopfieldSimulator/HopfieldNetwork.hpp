@@ -49,8 +49,16 @@ int count=0;
 
         for (int i = 0; i < numberNeurons; ++i) {
             for (int j = i; j < numberNeurons; ++j) {
-                count++;
-               *status = static_cast<float>(count) / totalIteration;
+                
+                if(status!=nullptr){
+                if(*status<0){
+ return;
+                }
+                   count++;
+                   *status = static_cast<float>(count) / totalIteration;
+                }
+                
+               
                 if(i==j){continue;}
                   matrix_type product_p_ij = static_cast<matrix_type>(p[i] * p[j]);
             weightMatrix_[i * numberNeurons + j] += product_p_ij * norm_factor;

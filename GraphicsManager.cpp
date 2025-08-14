@@ -65,7 +65,7 @@ void GraphicsManager::initialize() {
 }
 // ... (costruttore, distruttore, initialize, shutdown rimangono uguali)
 
-bool GraphicsManager::beginFrame() {
+bool GraphicsManager::beginFrame(std::vector<float*> kill) {
   if (!isInitialized_) {
     return false; // Non può iniziare un frame se non inizializzato
   }
@@ -80,6 +80,10 @@ bool GraphicsManager::beginFrame() {
     if (event.type == SDL_WINDOWEVENT &&
         event.window.event == SDL_WINDOWEVENT_CLOSE &&
         event.window.windowID == SDL_GetWindowID(window_)) {
+      for(auto &k: kill){
+        *k=-1.0f;
+      }
+
       return false; // Segnala al main loop di terminare
     }
   }

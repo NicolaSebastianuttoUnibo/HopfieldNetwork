@@ -19,10 +19,8 @@ int main(int, char **) {
     Components<int8_t> comp;
 
     HS::HopfieldSimulator<int8_t, double> hs;
-    int w = 8;
-    int h = 8;
-    int w_slider = 8;
-    int h_slider = 8;
+    int pixel = 8;
+    int pixel_slider = 8;
     float noise = 0.1f;
     size_t index = 0;
     bool running = true;
@@ -33,11 +31,16 @@ int main(int, char **) {
 
     float statusTrain=0.0f;
     float statusEvolve=0.0f;
-
+std::vector<float*> kill={&statusTrain, &statusEvolve};
 
     while (running) {
-      running = graphics.beginFrame();
+      running = graphics.beginFrame(kill);
 
+
+
+
+
+      
       if (running) {
 if (is_operation_in_progress) {
     if (training_future.valid() && training_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
@@ -59,20 +62,21 @@ if (is_operation_in_progress) {
 
         ImGui::Text("Controllo rete di Hopfield");
         ImGui::Text("Parametri:");
-        if (ImGui::SliderInt("Larghezza", &w_slider, 2, 64)) {
+        if (ImGui::SliderInt("Pixel Per Row", &pixel_slider, 2,128)) {
+         
+          if(hs.size()<9){ pixel=pixel_slider;    hs.regrid(pixel, pixel);}
         }
-        if (ImGui::SliderInt("Altezza", &h_slider, 2, 64)) {
-        }
-
+     
+if(hs.size()>8){
         ImGui::BeginDisabled(is_operation_in_progress);
         {
           if (ImGui::Button("Applica Grid")) {
-            w = w_slider;
-            h = h_slider;
-            hs.regrid(w, h);
+          pixel=pixel_slider;
+            hs.regrid(pixel, pixel);
           }
         }
         ImGui::EndDisabled();
+      }
 
         ImGui::SliderFloat("Noise", &noise, 0.0f,
                            1.0f);
@@ -111,7 +115,7 @@ if (is_operation_in_progress) {
                   ImGuiFileDialog::Instance()->GetSelection();
               for (const auto &[fileName, filePath] : selections) {
                 try {
-                  CSP::CoherenceSetPattern<int8_t> cps(filePath, w, h);
+                  CSP::CoherenceSetPattern<int8_t> cps(filePath, pixel, pixel);
                   hs.push_back(cps);
                 } catch (const std::exception &e) {
                       throw std::logic_error("Errore nel carcicare "+filePath+": " + std::string(e.what()));
@@ -130,7 +134,7 @@ if (is_operation_in_progress) {
           ImGui::Separator();
 
          
-            ImGui::BeginDisabled(is_operation_in_progress); // Questo ora disabiliterà il bottone mentre il training è in corso
+            ImGui::BeginDisabled(is_operation_in_progress); 
 {
     if (ImGui::Button("Train Hopfield Network")) {
         is_operation_in_progress = true; // Imposta lo stato a "in corso"
@@ -147,8 +151,11 @@ ImGui::EndDisabled();
            ImGui::SameLine();
 
 ImGui::Text("Caricamento: %.1f/100.0", 100.0f * statusTrain);
+           ImGui::SameLine();
 
-          
+           if (ImGui::Button("Stop!")) {
+         statusTrain=-1;
+          }
 
           ImGui::Separator();
         
@@ -172,7 +179,7 @@ ImGui::Text("Caricamento: %.1f/100.0", 100.0f * statusTrain);
           ImGui::Separator();
 
           ImGui::BeginGroup();
-          
+         ImGui::BeginDisabled(is_operation_in_progress); 
           if (ImGui::Button("Elimina")) {
             hs.removePattern(index);
             if (hs.size() == 0) {
@@ -184,26 +191,30 @@ ImGui::Text("Caricamento: %.1f/100.0", 100.0f * statusTrain);
             ImGui::EndGroup();
             imremoving = true;
           }
+ImGui::EndDisabled();
+
         }
         if (hs.size() > 0 && !imremoving) {
           const auto &current_pattern_container = hs.getPatterns()[index];
           ImGui::Text("Pattern pixelato originale:");
           const std::vector<int8_t> &training_data =
               current_pattern_container.getTrainingPatternVector();
-          comp.drawGrid(training_data, w, h, "training_pattern");
+          comp.drawGrid(training_data, pixel, pixel, "training_pattern");
           ImGui::EndGroup();
 
           ImGui::SameLine();
-
+ImGui::BeginDisabled(is_operation_in_progress);
           ImGui::BeginGroup();
           if (ImGui::Button("Corrompi")) {
             hs.corruptPattern(index, noise);
           }
+ImGui::EndDisabled();
+
           ImGui::Text("Pattern pixelato corrotto:");
           const std::vector<int8_t> &noisy_data =
               current_pattern_container.getNoisyPatternVector();
 
-          comp.drawGrid(noisy_data, w, h, "noisy_pattern",
+          comp.drawGrid(noisy_data, pixel, pixel, "noisy_pattern",
                         [&](int hovered_index) {
                           hs.flipPixelOnPattern(index, hovered_index);
                         });
@@ -227,12 +238,16 @@ ImGui::Text("Caricamento: %.1f/100.0", 100.0f * statusTrain);
 
 ImGui::SameLine();
 ImGui::Text("Caricamento: %.1f/100.0", 100.0f * statusEvolve);
+  ImGui::SameLine();
 
+           if (ImGui::Button("Stop")) {
+         statusEvolve=-1;
+          }
           ImGui::Text("Pattern pixelato evoluzione:");
           const std::vector<int8_t> &evolving_data =
               current_pattern_container.getEvolvingPatternVector();
 
-          comp.drawGrid(evolving_data, w, h, "evolving_pattern");
+          comp.drawGrid(evolving_data, pixel, pixel, "evolving_pattern");
 ImGui::EndGroup();
 
 ImGui::SameLine();
@@ -289,7 +304,10 @@ ImGui::EndGroup();
         ImGui::End();
       }
 
+
+      
       graphics.endFrame();
+
     }
 
   } catch (const std::runtime_error &e) {

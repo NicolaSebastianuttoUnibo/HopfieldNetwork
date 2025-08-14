@@ -126,7 +126,7 @@ int count=0;
        
         matrix_type sum = 0;
         for (size_t j = 0; j < num_neurons; ++j) {
-
+if(*status<0){return;}
             count++;
                *status = static_cast<float>(count) / totalIteration;
              sum += static_cast<matrix_type>(weightMatrix_[i * num_neurons + j]) * getVector[j];

@@ -28,7 +28,7 @@ public:
 
   ~GraphicsManager();
 
-  bool beginFrame();
+  bool beginFrame(std::vector<float*> kill={});
   void endFrame();
   void config();
 

@@ -27,6 +27,9 @@ class TrainingPattern {
     int imgHeight_ = 0;
     int imgChannels_ = 0;
 
+        std::vector<long long> integralImage_; 
+void calculateIntegralImage();
+
 public:
   TrainingPattern(const std::string& path, const std::size_t numColumns, const std::size_t numRows);
   TrainingPattern() = delete;
