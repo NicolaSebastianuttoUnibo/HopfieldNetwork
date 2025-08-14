@@ -120,30 +120,37 @@ int count=0;
     getEnergy.reserve(num_neurons);
     getEnergy.push_back(calculateEnergy(getVector));
 
-
+float thisdelta=0;
   for (size_t i = 0; i < num_neurons; ++i) {
             
-       
+       thisdelta=0;
         matrix_type sum = 0;
         for (size_t j = 0; j < num_neurons; ++j) {
 if(*status<0){return;}
-            count++;
+ count++;
+
+thisdelta-=(static_cast<float>(getVector[i]*getVector[j])*static_cast<float>(weightMatrix_[i*num_neurons+j]));
+           
                *status = static_cast<float>(count) / totalIteration;
              sum += static_cast<matrix_type>(weightMatrix_[i * num_neurons + j]) * getVector[j];
        
-       
-            }
+            }///fine  indice j
 
          getVector[i] = static_cast<neurons_type>(sum > 0 ? +1 : -1);
+         getEnergy.push_back(getEnergy.back()+calculateDeltaEnergy(getVector,i)-thisdelta );
 
+          
 
-       
-    getEnergy.push_back(getEnergy.back()+calculateDeltaEnergy(getVector,i));
-
-
-    }
+    }/// fine indice i 
 
 
   
 
+   }
+
+
+   template <typename neurons_type, typename matrix_type> 
+ void  HN::HopfieldNetwork<neurons_type,matrix_type>::clearEnergy(CSP::CoherenceSetPattern<neurons_type>& cps){
+ EP::EvolvingPattern<neurons_type>& ep=cps.getEvolvingPattern();
+ep.clearEnergy();
    }

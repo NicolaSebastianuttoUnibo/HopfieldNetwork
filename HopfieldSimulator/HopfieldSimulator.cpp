@@ -128,6 +128,5 @@ template <typename neurons_type, typename matrix_type>
 template <typename neurons_type, typename matrix_type> 
 size_t HS::HopfieldSimulator<neurons_type,matrix_type>::size(){
 return patterns_.size();
-
 }
   

@@ -37,6 +37,10 @@ public:
 
 void resolvePattern(const int index, float* status);
 
+void clear(const int index){
+  hn_.clearEnergy(patterns_[index]);
+}
+
 };
 
 template class HopfieldSimulator<int8_t,float>;

@@ -26,7 +26,11 @@ class HopfieldNetwork{
 
 
     const std::vector<neurons_type> resolvePattern(const std::vector<neurons_type>& array);
-   void  resolvePattern(CSP::CoherenceSetPattern<neurons_type>& cps, float* status=nullptr);
+   
+   void  clearEnergy(CSP::CoherenceSetPattern<neurons_type>& cps);
+
+   
+    void  resolvePattern(CSP::CoherenceSetPattern<neurons_type>& cps, float* status=nullptr);
   
    float  calculateEnergy(std::vector<neurons_type>& input);
    float  calculateDeltaEnergy(std::vector<neurons_type>& input, const size_t index);

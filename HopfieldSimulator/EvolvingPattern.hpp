@@ -34,6 +34,8 @@ public:
   std::vector<float>& getEnergy() {
     return energy_; 
   }
+void clearEnergy(){
+  energy_.clear();}
 
 
 };

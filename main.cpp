@@ -166,12 +166,15 @@ ImGui::Text("Caricamento: %.1f/100.0", 100.0f * statusTrain);
 
           if (ImGui::Button("<")) {
             if (index > 0) {
+              hs.clear(index);
+
               index--;
             }
           }
           ImGui::SameLine();
           if (ImGui::Button(">")) {
             if (index < hs.size() - 1) {
+              hs.clear(index);
               index++;
             }
           }
@@ -227,7 +230,7 @@ ImGui::EndDisabled();
           ImGui::BeginDisabled(is_operation_in_progress);
           {
             if (ImGui::Button("Evolvi")) {
-              // hs.resolvePattern(index);
+statusEvolve = 0.0f;               // hs.resolvePattern(index);
               training_future = std::async(std::launch::async, [&]() {
             // Questa è una lambda che verrà eseguita nel nuovo thread
             hs.resolvePattern(index,  &statusEvolve);
