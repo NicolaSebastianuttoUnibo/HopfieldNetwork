@@ -12,6 +12,7 @@
 #include <chrono>   
 
 
+
 int main(int, char **) {
   try {
     GraphicsManager graphics;
@@ -58,9 +59,9 @@ if (is_operation_in_progress) {
 
         ImGui::Text("Controllo rete di Hopfield");
         ImGui::Text("Parametri:");
-        if (ImGui::SliderInt("Larghezza", &w_slider, 2, 32)) {
+        if (ImGui::SliderInt("Larghezza", &w_slider, 2, 64)) {
         }
-        if (ImGui::SliderInt("Altezza", &h_slider, 2, 32)) {
+        if (ImGui::SliderInt("Altezza", &h_slider, 2, 64)) {
         }
 
         ImGui::BeginDisabled(is_operation_in_progress);
@@ -238,45 +239,46 @@ ImGui::SameLine();
           ImGui::BeginGroup();
 
 const std::vector<float>& energy= current_pattern_container.getEnergy();
-          
- if (energy.empty()) {
-        ImGui::Text("Nessun dato di energia disponibile.");
-    }
+    
 
+// Se non ci sono dati, mostra un messaggio
+if (energy.size() == 0) {
+    ImGui::Text("Nessun dato di energia disponibile.");
+} else {
+  ImGui::Text("Andamento dell'energia");
     // --- Parametri per ImGui::PlotLines ---
-    const char* graph_label = "Andamento Energia"; // Etichetta che apparirà sul grafico
-    const float* values = energy.data();           // Puntatore ai dati (necessario per ImGui)
-    int values_count = static_cast<int>(energy.size()); // Numero di elementi nel vettore
+    const char* graph_label = "label";
+    // Il puntatore è lo stesso, ma l'offset farà iniziare ImGui da un punto diverso
+    const float* values = energy.data(); 
 
-    // Puoi calcolare min/max per impostare un range automatico del grafico
-    // (Opzionale, se non specifichi min_value/max_value, ImGui li calcola automaticamente)
-    float min_val ;
-    float max_val ;
-    if (values_count > 0) {
-        min_val = *std::min_element(energy.begin(), energy.end());
-        max_val = *std::max_element(energy.begin(), energy.end());
-        // Aggiungi un piccolo buffer per la visualizzazione
+    // Calcola min/max SOLO sulla finestra di dati visibile. Questo è un enorme guadagno!
+    float min_val = 0.0f;
+    float max_val = 0.0f;
+    // Prendi un iteratore che punta all'inizio dei dati che ci interessano
+    auto start_it = energy.begin();
+    auto end_it = energy.end();
+
+    if (start_it != end_it) {
+        min_val = *std::min_element(start_it, end_it);
+        max_val = *std::max_element(start_it, end_it);
+
         float buffer = (max_val - min_val) * 0.1f;
         min_val -= buffer;
         max_val += buffer;
     }
 
-
-
     // Disegna il grafico a linee
     ImGui::PlotLines(
-        graph_label,      // Etichetta del grafico
-        values,           // Puntatore ai dati
-        values_count,     // Numero di elementi
-        0,                // Offset (inizia dal primo elemento)
-        NULL,             // Overlay text (testo aggiuntivo sul grafico, qui nessuno)
-        min_val,          // Valore minimo del range Y (ImGui lo calcola se 0.0f)
-        max_val,          // Valore massimo del range Y (ImGui lo calcola se 0.0f)
-        ImVec2(300, 300)      // Dimensione del grafico (larghezza 0 = riempi, altezza 80 pixel)
+        graph_label,
+        values,
+        energy.size(),       // Numero totale di elementi nel vettore originale
+        0,      // Offset di partenza! ImGui inizierà da qui.
+        NULL,
+        min_val,
+        max_val,
+        ImVec2(300, 300)      // Larghezza 0 = riempi, altezza 150 pixel
     );
-
-    
-
+}
 
 
 ImGui::EndGroup();

@@ -29,12 +29,15 @@ class HopfieldNetwork{
    void  resolvePattern(CSP::CoherenceSetPattern<neurons_type>& cps, float* status=nullptr);
   
    float  calculateEnergy(std::vector<neurons_type>& input);
+   float  calculateDeltaEnergy(std::vector<neurons_type>& input, const size_t index);
 
    template<typename Iterable, typename Extractor>
 void trainNetwork(const Iterable &patterns, const Extractor extractor, float* status=nullptr) {
    
     if (patterns.empty()) {return;}
     const int numberNeurons = extractor(*patterns.begin()).size();
+ const matrix_type norm_factor = static_cast<matrix_type>(1.0) / static_cast<matrix_type>(numberNeurons);
+
 
  const int totalIteration=(numberNeurons+1)*numberNeurons*patterns.size()/2;
 int count=0;
@@ -43,14 +46,15 @@ int count=0;
     for (const auto& pattern_container : patterns) {
         const auto& p = extractor(pattern_container);
         
-        // Aggiungi il contributo di questo pattern a tutta la matrice dei pesi
+
         for (int i = 0; i < numberNeurons; ++i) {
             for (int j = i; j < numberNeurons; ++j) {
                 count++;
                *status = static_cast<float>(count) / totalIteration;
                 if(i==j){continue;}
-                weightMatrix_[i * numberNeurons + j] += static_cast<matrix_type>(p[i] * p[j])/static_cast<matrix_type>(numberNeurons);
-                weightMatrix_[j * numberNeurons + i] += static_cast<matrix_type>(p[i] * p[j])/static_cast<matrix_type>(numberNeurons);
+                  matrix_type product_p_ij = static_cast<matrix_type>(p[i] * p[j]);
+            weightMatrix_[i * numberNeurons + j] += product_p_ij * norm_factor;
+            weightMatrix_[j * numberNeurons + i] += product_p_ij * norm_factor;
             
             }
         }

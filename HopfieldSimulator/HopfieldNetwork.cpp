@@ -4,6 +4,27 @@
 #include "CoherenceSetPattern.hpp"
 #include "EvolvingPattern.hpp"
 #include<iostream>
+
+#include<cassert>
+
+
+#include <cmath>
+#include <algorithm> // Per std::max
+bool areAlmostEqual(float a, float b, float relative_tolerance = 0.05f, float absolute_tolerance = 1e-9f) {
+    // Se la differenza è inferiore alla tolleranza assoluta, sono considerati uguali.
+    // Questo gestisce il caso in cui a e b sono molto vicini a zero.
+    float diff = std::abs(a - b);
+    if (diff <= absolute_tolerance) {
+        return true;
+    }
+
+    // Altrimenti, usa la tolleranza relativa.
+    // Dividiamo per il più grande dei due valori per rendere il test simmetrico e più stabile.
+    return diff <= (std::max(std::abs(a), std::abs(b)) * relative_tolerance);
+}
+
+
+
 template <typename neurons_type, typename matrix_type> 
     void HN::HopfieldNetwork<neurons_type,matrix_type>::setTraining(std::vector<matrix_type>& matrix){
 weightMatrix_=matrix;
@@ -41,9 +62,27 @@ const std::vector<neurons_type> HN::HopfieldNetwork<neurons_type, matrix_type>::
 }
 
 
+
+template <typename neurons_type, typename matrix_type>
+   float HN::HopfieldNetwork<neurons_type, matrix_type>::calculateDeltaEnergy(std::vector<neurons_type>& input, const size_t index){
+const size_t num_neurons =input.size();
+
+        if (num_neurons * num_neurons != weightMatrix_.size()) {
+
+        throw std::invalid_argument("the pattern cannot be resolved due to dimensions incompatibility: m: " + std::to_string(weightMatrix_.size()) + " a: " + std::to_string(num_neurons));
+    }
+float delta=0;
+  for (size_t i = 0; i < num_neurons; ++i) {
+  delta-=(static_cast<float>(input[i]*input[index])*static_cast<float>(weightMatrix_[index*num_neurons+i]));
+}
+return delta;
+   }
+
 template <typename neurons_type, typename matrix_type>
    float HN::HopfieldNetwork<neurons_type, matrix_type>::calculateEnergy(std::vector<neurons_type>& input){
 
+
+    
 const size_t num_neurons =input.size();
 
         if (num_neurons * num_neurons != weightMatrix_.size()) {
@@ -51,8 +90,8 @@ const size_t num_neurons =input.size();
         throw std::invalid_argument("the pattern cannot be resolved due to dimensions incompatibility: m: " + std::to_string(weightMatrix_.size()) + " a: " + std::to_string(num_neurons));
     }
 float energy=0;
-  for (size_t i = 0; i < num_neurons; ++i) {
-  for (size_t j = i; j < num_neurons; ++j) {
+  for (size_t i = 1; i < num_neurons; ++i) {
+  for (size_t j = i+1; j < num_neurons; ++j) {
 energy-=(static_cast<float>(input[i]*input[j])*static_cast<float>(weightMatrix_[i*num_neurons+j]));
   }}
 
@@ -79,9 +118,10 @@ int count=0;
     }
     getEnergy.clear();
     getEnergy.reserve(num_neurons);
+    getEnergy.push_back(calculateEnergy(getVector));
+
 
   for (size_t i = 0; i < num_neurons; ++i) {
-    getEnergy.push_back(calculateEnergy(getVector));
             
        
         matrix_type sum = 0;
@@ -95,6 +135,12 @@ int count=0;
             }
 
          getVector[i] = static_cast<neurons_type>(sum > 0 ? +1 : -1);
+
+
+       
+    getEnergy.push_back(getEnergy.back()+calculateDeltaEnergy(getVector,i));
+
+
     }
 
 
