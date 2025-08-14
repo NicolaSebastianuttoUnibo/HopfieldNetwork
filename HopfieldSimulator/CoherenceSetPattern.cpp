@@ -84,5 +84,12 @@ template <typename T>
    
   }
 
-
-  
+template <typename T> 
+    const size_t& CSP::CoherenceSetPattern<T>::getRow() const noexcept{
+      return rows_;
+    }
+    
+template <typename T> 
+  const size_t& CSP::CoherenceSetPattern<T>::getCol() const noexcept{
+      return cols_;
+  }

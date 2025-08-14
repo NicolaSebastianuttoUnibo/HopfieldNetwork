@@ -1,10 +1,3 @@
- 
-
-#cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug 
-#cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-
- 
-
 cmake_minimum_required(VERSION 3.16) 
 
 project(main VERSION 0.1.0) 
@@ -28,7 +21,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON) 
 
-set(CMAKE_CXX_EXTENSIONS ON) 
+set(CMAKE_CXX_EXTENSIONS OFF) 
 
  
 
@@ -48,20 +41,20 @@ string(APPEND CMAKE_EXE_LINKER_FLAGS_DEBUG " -fsanitize=address,undefined -fno-o
 
  
 
- 
+# Aggiunge la directory di inclusione per Eigen
+# Assicurati che la cartella 'eigen' (quella che contiene la sottocartella 'Eigen')
+# sia nella stessa directory del tuo CMakeLists.txt
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/eigen)
+
 
 # Aggiunge il target eseguibile. Specifica il nome dell'eseguibile e i file sorgente. 
 
-#add_executable(main main.cpp HopfieldAlgorithm.cpp quadro.cpp corrotto.cpp Pattern.cpp TantiPattern.cpp
-add_executable(main main.cpp GraphicsManager.cpp HopfieldSimulator/TrainingPattern.cpp HopfieldSimulator/NoisyPattern.cpp  HopfieldSimulator/EvolvingPattern.cpp  HopfieldSimulator/CoherenceSetPattern.cpp HopfieldSimulator/HopfieldNetwork.cpp HopfieldSimulator/HopfieldSimulator.cpp 
+add_executable(main main.cpp GraphicsManager.cpp Components.cpp HopfieldSimulator/TrainingPattern.cpp HopfieldSimulator/NoisyPattern.cpp  HopfieldSimulator/EvolvingPattern.cpp  HopfieldSimulator/CoherenceSetPattern.cpp HopfieldSimulator/HopfieldNetwork.cpp HopfieldSimulator/HopfieldSimulator.cpp 
 
  ImGuiFileDialog/ImGuiFileDialog.cpp imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp imgui/imgui_widgets.cpp imgui/imgui_demo.cpp imgui/backends/imgui_impl_sdl2.cpp imgui/backends/imgui_impl_opengl3.cpp
 ) 
 
  
-
-
-
 
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
@@ -70,15 +63,7 @@ target_link_libraries(main ${SDL2_LIBRARIES} GL)
 
  
 add_executable(all.t HopfieldNetwork.test.cpp  HopfieldSimulator/HopfieldNetwork.cpp )
+# Anche i test potrebbero aver bisogno di Eigen se HopfieldNetwork.cpp lo usa
+# include_directories(${CMAKE_CURRENT_SOURCE_DIR}/eigen) è già globale e copre questo
 target_link_libraries(all.t)
 add_test(NAME all.t COMMAND all.t)
-
- 
-
- 
-
- 
-
- 
-
- 

@@ -5,6 +5,7 @@
 #include <vector>
 
 
+
 namespace HS {
 
 
@@ -32,8 +33,11 @@ public:
   void removePattern(const size_t index);
   const std::vector<CSP::CoherenceSetPattern<neurons_type>>& getPatterns() const;
   void trainNetwork(float* status=nullptr);
+  void trainNetworkWithPseudoinverse(float* status=nullptr);
   size_t size();
-
+  void setTraining(const int numColumns, const int numRows, std::vector<matrix_type>& matrix );
+void saveFileTraining(char* str_buffer);
+ 
 
 void resolvePattern(const int index, float* status);
 
