@@ -4,264 +4,235 @@
 #include "HopfieldSimulator/HopfieldNetwork.hpp"
 #include "HopfieldSimulator/HopfieldSimulator.hpp"
 #include "ImGuiFileDialog/ImGuiFileDialog.h"
+#include <chrono>
+#include <functional>
+#include <future>
+#include <iomanip>
 #include <iostream>
 #include <stdexcept>
 #include <string>
-#include <iomanip>
-#include <future>
-#include <chrono>   
-#include <functional> 
-#include <filesystem> 
-#include <fstream> 
-
-template <typename matrix_type>
-void  setElementsByFile(const std::string& filePath, int* a, int* b, std::vector<matrix_type>* m){
-
-
- std::filesystem::path filePath2(filePath);
-
-        if (!std::filesystem::exists(filePath)) {
-            throw std::runtime_error("File di training non trovato: " + filePath2.string());
-        }
-        std::ifstream inFile(filePath);
-        if (!inFile.is_open()) {
-            throw std::runtime_error("Impossibile aprire il file per la lettura: " + filePath2.string());
-        }
-
-        int numRows, numColumns;
-        
-        if (!(inFile >> numRows >> numColumns)) {
-            throw std::runtime_error("Formato file non valido: impossibile leggere le dimensioni da " + filePath2.string());
-        }
-        if(numRows!=numColumns){
-        throw std::runtime_error("Le dimensioni della matrice non valida");
-
-        }
-
-        std::vector<double> matrix;
-        double element;
-        
-        while (inFile >> element) {
-            matrix.push_back(element);
-        }
-
-        inFile.close();
- *a=numRows;
- *b=numColumns;
- *m=matrix;
-}
-
 
 int main(int, char **) {
   try {
-    GraphicsManager graphics;
-    Grid<int8_t> comp;
 
-    HS::HopfieldSimulator<int8_t, double> hs;
-    int pixel = 8;
-    int pixel_slider = 8;
-    float noise = 0.1f;
-    size_t index = 0;
-    bool running = true;
-    bool is_operation_in_progress = false;
-    bool trained=false;
-    bool showWindow=true;
-    std::future<void> training_future;
-static char pathBuffer[256] = "trainings/nome_rete";
-    float statusTrain=0.0f;
-    float statusEvolve=0.0f;
-std::vector<float*> kill={&statusTrain, &statusEvolve};
+    /********************INIZIO ELENCO VARIABILI********************/
 
-FileDialogHelper fdh{"firstDialog","Open Image(s)",".png,.jpg,.jpeg,.bmp,.gif",25};
-fdh.onSuccess = [&](const std::string& filePath) {
-        CSP::CoherenceSetPattern<int8_t> cps(filePath, pixel, pixel);
-        hs.push_back(cps);
-};
-fdh.onDialogClose = [&]{showWindow=true;};
+    GraphicsManager graphics; // gestisce le librerie grafiche di IMGUI e SDL
+    Comp<int8_t> comp; // permette di creare griglie, grafici in modo semplice
+    HS::HopfieldSimulator<int8_t, double>
+        hs;        // l'oggetto con cui possiamo personalizzare il nostro stato
+    int pixel = 8; // i numeri di pixel che deve avere la classe
+    int pixel_slider = 8; // i pixel indicati dallo slider
+    float noise = 0.1f;  // il rumore che sarà generato dal pulsante "Corrompi"
+    size_t index = 0;    // indice del pattern da visualizzare
+    bool running = true; // sta dicendo se il programma sta andando
+    bool is_operation_in_progress =
+        false; // se true evita che che l'utente prema un altro pulsante che
+               // richiede tanta computazione
+    bool hebb = true;     // booleano per scegliere il tipo di training
+    bool trained = false;     // verifica se i pattern sono stati trainati 
+    bool showWindow = true;   // mi dice se mi mostra la schermata iniziale
+    std::future<void> thread; // mi lancia in parallelo le operazioni complesse
+    static char pathBuffer[256] =
+        "trainings/nomeDellaReteDiHopfield"; // nome di default per il
+                                             // salvataggio dei file dei
+                                             // trainings
+    float statusTrain =
+        0.0f; // mi indica la percentuale di caricamento del training
+    float statusEvolve =
+        0.0f; // mi indica la percentuale di caricamento dell'evolve
+    std::vector<float *> kill = {
+        &statusTrain, &statusEvolve}; // puntatori agli stati in modo tal
+    // e che il programma è in grado di accederli, e interrompere processi
+    // costosi
 
-FileDialogHelper fdh2{"seccondDialog","Open Training",".training", 1};
-fdh2.onSuccess = [&](const std::string& filePath) {
-   
-     
-        // std::filesystem::path filePath2(filePath);
+    /// primo FileDialog
+    FileDialogHelper fdh{"firstDialog", "Open Image(s)",
+                         ".png,.jpg,.jpeg,.bmp,.gif",
+                         25}; // file dialog per aprire immagini
+    fdh.onSuccess = [&](const std::string &filePath) {
+      CSP::CoherenceSetPattern<int8_t> cps(
+          filePath, pixel,
+          pixel);        // per ogni file crea la classe che gestisce un pattern
+      hs.push_back(cps); // e lo inserisce nella classe che gestisce più pattern
+    };
+    fdh.onDialogClose = [&] {
+      showWindow = true;
+    }; // quando chiudo il dialogo, voglio che si veda la finestra principale
 
-        // if (!std::filesystem::exists(filePath)) {
-        //     throw std::runtime_error("File di training non trovato: " + filePath2.string());
-        // }
-        // std::ifstream inFile(filePath);
-        // if (!inFile.is_open()) {
-        //     throw std::runtime_error("Impossibile aprire il file per la lettura: " + filePath2.string());
-        // }
+    /// primo FileDialog
+    FileDialogHelper fdh2{"seccondDialog", "Open Training", ".training",
+                          1}; // file dialog per aprire un training
+    fdh2.onSuccess = [&](const std::string &filePath) {
+      ////un file training ha due due interi che rappresentano le due dimensioni
+      ///(larghezza e altezza) dei pattern che sa risolvere e la matrice dei
+      /// pesi
+      int numRows = 0;
+      int numColumns = 0;
+      std::vector<double> matrix;
 
-        // int a, b;
-        
-        // if (!(inFile >> a >> b)) {
-        //     throw std::runtime_error("Formato file non valido: impossibile leggere le dimensioni da " + filePath2.string());
-        // }
-        // if(a!=b){
-        // throw std::runtime_error("Le dimensioni della matrice non valida");
+      // funzione che mi restituisce i dati
+      setElementsByFile(filePath, &numRows, &numColumns, &matrix);
+      if (numRows != numColumns) {
+        /// il main è costruito per essere quadrato
+        throw std::runtime_error("Le dimensioni della matrice non valida: il "
+                                 "training deve essere di pattern quadrati");
+      }
 
-        // }
+      pixel = numRows;                             // assegno il dato ottenuto
+      hs.setTraining(numRows, numColumns, matrix); // assegno il training
+      trained = true; // affermo che è stato trainato
+    };
+    fdh2.onDialogClose = [&] {
+      showWindow = true;
+    }; // quando chiudo il dialogo, voglio che si veda la finestra principale
 
-        // std::vector<double> m;
-        // double element;
-        
-        // while (inFile >> element) {
-        //     m.push_back(element);
-        // }
-
-        // inFile.close();
-
-
-        int numRows=0;
-        int numColumns=0;
-        std::vector<double> matrix;
-        setElementsByFile(filePath,&numRows,&numColumns,&matrix);
-        pixel=numRows;
-        hs.setTraining(numRows,numColumns,matrix);
-        trained=true;
-
-};
-fdh2.onDialogClose = [&]{showWindow=true;};
+    /*********FINE ELENCO VARIABILI***************/
 
     while (running) {
+
+      // gestisce l'inizio del frame e controlla se deve uccidere un thread
       running = graphics.beginFrame(kill);
 
-
-
-
-
-      
       if (running) {
-if (is_operation_in_progress) {
-    if (training_future.valid() && training_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
-        training_future.get();
-        is_operation_in_progress = false;
-        statusTrain = 1.0f;
-        statusEvolve= 1.0f;
 
-    }
-}
-
-
-
-
+        // gestione di thread
+        if (is_operation_in_progress) {
+          if (thread.valid() && thread.wait_for(std::chrono::seconds(0)) ==
+                                    std::future_status::ready) {
+            thread.get();
+            is_operation_in_progress = false;
+            statusTrain = 1.0f;
+            statusEvolve = 1.0f;
+          }
+        }
+        // configura le grafiche
         graphics.config();
-        ImGui::SetNextWindowCollapsed(!showWindow, ImGuiCond_Always); 
+        ImGui::SetNextWindowCollapsed(!showWindow, ImGuiCond_Always);
+
+        /****************INIZIO DELLA CREAZIONE DELLA FINESTRA****************/
+        /*************inizio parametri  controllabili***********/
 
         ImGui::Begin("Rete di Hopfield");
 
         ImGui::Text("Controllo rete di Hopfield");
         ImGui::Text("Parametri:");
-                ImGui::BeginDisabled(is_operation_in_progress);
-        if (ImGui::SliderInt("Pixel Per Row", &pixel_slider, 2,64)) {
-         
-          if(hs.size()<9){ pixel=pixel_slider;trained=false;    hs.regrid(pixel, pixel);}
-        }
-        ImGui::EndDisabled();
-     
-if(hs.size()>8){
         ImGui::BeginDisabled(is_operation_in_progress);
-        {
-          if (ImGui::Button("Applica Grid")) {
-          pixel=pixel_slider;
-          trained=false;
+        if (ImGui::SliderInt("Pixel Per Row", &pixel_slider, 2, 64)) {
+
+          if (hs.size() < 9) {
+            pixel = pixel_slider;
+            trained = false;
             hs.regrid(pixel, pixel);
           }
         }
         ImGui::EndDisabled();
-      }
 
-        ImGui::SliderFloat("Noise", &noise, 0.0f,
-                           1.0f);
+        if (hs.size() > 8) {
+          ImGui::BeginDisabled(is_operation_in_progress);
+          {
+            if (ImGui::Button("Applica Grid")) {
+              pixel = pixel_slider;
+              trained = false;
+              hs.regrid(pixel, pixel);
+            }
+          }
+          ImGui::EndDisabled();
+        }
+
+        ImGui::SliderFloat("Noise", &noise, 0.0f, 1.0f);
         ImGui::Separator();
-
-
-
+        /************fine parametri controllabili****************/
+        /*pulsante per aprire immaggini*******************/
         ImGui::BeginDisabled(is_operation_in_progress);
         {
           if (ImGui::Button("Open Images")) {
-            showWindow=false;
+            showWindow = false;
             fdh.open();
           }
-           fdh.render();
+          fdh.render();
         }
-          ImGui::EndDisabled();
+        ImGui::EndDisabled();
 
-          ImGui::Separator();
-
-         
-            ImGui::BeginDisabled(is_operation_in_progress); 
-{
-    if (ImGui::Button("Train Hopfield Network")) {
-      trained=true;
-        is_operation_in_progress = true; // Imposta lo stato a "in corso"
-        statusTrain = 0.0f;                   // Resetta la barra di progresso
-
-        // Avvia trainNetwork in un thread separato usando std::async
-        training_future = std::async(std::launch::async, [&]() {
-            // Questa è una lambda che verrà eseguita nel nuovo thread
-            hs.trainNetworkWithPseudoinverse(&statusTrain);
-        });
-    }
-}
-ImGui::EndDisabled();
-
-           ImGui::SameLine();
-             
-      
-////////////////////////////////////////////////////////////////////////
-
-    if (ImGui::Button("Save Trained Network")) {
-        ImGui::OpenPopup("Save Dialog");
-    }
-    
-    if (ImGui::BeginPopupModal("Save Dialog", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-        
-        ImGui::Text("Salva la rete Hopfield addestrata.\nSpecifica il percorso di salvataggio (senza estensione).\n");
         ImGui::Separator();
+        /***************inzio sezione training**********/
+        /*pulsante per trainare la  rete*************/
+        if (ImGui::Button(hebb?"Hebb":"Pseudoinverse")){hebb=!hebb;}
+        ImGui::SameLine();
+        ImGui::BeginDisabled(is_operation_in_progress);
+        {
+          if (ImGui::Button("Train Hopfield Network")) {
+            trained = true;
+            is_operation_in_progress = true; // Imposta lo stato a "in corso"
+            statusTrain = 0.0f;              // Resetta la barra di progresso
 
-        ImGui::InputText("Percorso di salvataggio", pathBuffer, sizeof(pathBuffer));
-        ImGui::Spacing();
-
-    
-if (ImGui::Button("Save", ImVec2(120, 0))) {
-hs.saveFileTraining(pathBuffer);
-    ImGui::CloseCurrentPopup();
-}
-
-        ImGui::SetItemDefaultFocus();
+            // Avvia trainNetwork in un thread separato usando std::async
+            thread = std::async(std::launch::async, [&]() {
+              // Questa è una lambda che verrà eseguita nel nuovo thread
+              if(hebb){hs.trainNetwork(&statusTrain);}
+              else{hs.trainNetworkWithPseudoinverse(&statusTrain);}
+            });
+          }
+        }
+        ImGui::EndDisabled();
         ImGui::SameLine();
 
-        if (ImGui::Button("Cancel", ImVec2(120, 0))) {
-            ImGui::CloseCurrentPopup();
+        /*pulsante per salvare la rete**************************/
+
+        if (ImGui::Button("Save Trained Network")) {
+          ImGui::OpenPopup("Save Dialog");
         }
 
-        ImGui::EndPopup();
-    }
-    ////////////////////////////////////////////////////////////////////////////
-           ImGui::SameLine();
+        if (ImGui::BeginPopupModal("Save Dialog", NULL,
+                                   ImGuiWindowFlags_AlwaysAutoResize)) {
+
+          ImGui::Text("Salva la rete Hopfield addestrata.\nSpecifica il "
+                      "percorso di salvataggio (senza estensione).\n");
+          ImGui::Separator();
+
+          ImGui::InputText("Percorso di salvataggio", pathBuffer,
+                           sizeof(pathBuffer));
+          ImGui::Spacing();
+
+          if (ImGui::Button("Save", ImVec2(120, 0))) {
+            hs.saveFileTraining(pathBuffer);
+            ImGui::CloseCurrentPopup();
+          }
+
+          ImGui::SetItemDefaultFocus();
+          ImGui::SameLine();
+
+          if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+            ImGui::CloseCurrentPopup();
+          }
+
+          ImGui::EndPopup();
+        }
+        /*pulsante per caricare una rete************************/
+        ImGui::SameLine();
         ImGui::BeginDisabled(is_operation_in_progress);
         {
           if (ImGui::Button("Open Training")) {
-            showWindow=false;
+            showWindow = false;
             fdh2.open();
           }
-           fdh2.render();
+          fdh2.render();
         }
-          ImGui::EndDisabled();
-          //////////
-           ImGui::SameLine();
-     if (ImGui::Button("Stop!")) {
-         statusTrain=-1;
-          }
-           ImGui::SameLine();
-ImGui::Text("Caricamento: %.1f/100.0", 100.0f * statusTrain);
+        ImGui::EndDisabled();
+        /*pulsante per fermare una rete e il suo
+         * status***************************/
+        ImGui::SameLine();
+        if (ImGui::Button("Stop!")) {
+          statusTrain = -1;
+        }
+        ImGui::SameLine();
+        ImGui::Text("Caricamento: %.1f/100.0", 100.0f * statusTrain);
 
-      
+        /************fine sezione training****************/
+        /****************inizio sezione avanti e indietro**************/
 
-          ImGui::Separator();
-        
+        ImGui::Separator();
+
         if (hs.size() > 0) {
 
           ImGui::Text("Stai guardando il %ld° pattern", index + 1);
@@ -272,7 +243,7 @@ ImGui::Text("Caricamento: %.1f/100.0", 100.0f * statusTrain);
 
               index--;
             }
-             ImGui::End();
+            ImGui::End();
             graphics.endFrame();
 
             continue;
@@ -290,9 +261,12 @@ ImGui::Text("Caricamento: %.1f/100.0", 100.0f * statusTrain);
           }
 
           ImGui::Separator();
+          /************************fine sezione avanti e indietro***********/
+          /*****************inizio disegno dei tre pattern******************/
+          /*pattern originale************/
 
           ImGui::BeginGroup();
-         ImGui::BeginDisabled(is_operation_in_progress); 
+          ImGui::BeginDisabled(is_operation_in_progress);
           if (ImGui::Button("Elimina")) {
             hs.removePattern(index);
             if (hs.size() == 0) {
@@ -303,28 +277,28 @@ ImGui::Text("Caricamento: %.1f/100.0", 100.0f * statusTrain);
             index = 0;
             ImGui::EndGroup();
             ImGui::EndDisabled();
-              ImGui::End();
+            ImGui::End();
             graphics.endFrame();
 
             continue;
           }
-ImGui::EndDisabled();
+          ImGui::EndDisabled();
 
-        
           const auto &current_pattern_container = hs.getPatterns()[index];
           ImGui::Text("Pattern pixelato originale:");
           const std::vector<int8_t> &training_data =
               current_pattern_container.getTrainingPatternVector();
           comp.drawGrid(training_data, pixel, pixel, "training_pattern");
           ImGui::EndGroup();
+          /*pattern corrotto********************************/
 
           ImGui::SameLine();
-ImGui::BeginDisabled(is_operation_in_progress);
+          ImGui::BeginDisabled(is_operation_in_progress);
           ImGui::BeginGroup();
           if (ImGui::Button("Corrompi")) {
             hs.corruptPattern(index, noise);
           }
-ImGui::EndDisabled();
+          ImGui::EndDisabled();
 
           ImGui::Text("Pattern pixelato corrotto:");
           const std::vector<int8_t> &noisy_data =
@@ -337,93 +311,55 @@ ImGui::EndDisabled();
           ImGui::EndGroup();
 
           ImGui::SameLine();
+          /*pattern evoluzone********************************/
 
           ImGui::BeginGroup();
 
-          ImGui::BeginDisabled(!trained||is_operation_in_progress);
+          ImGui::BeginDisabled(!trained || is_operation_in_progress);
           {
             if (ImGui::Button("Evolvi")) {
-statusEvolve = 0.0f;               // hs.resolvePattern(index);
-              training_future = std::async(std::launch::async, [&]() {
-            // Questa è una lambda che verrà eseguita nel nuovo thread
-            hs.resolvePattern(index,  &statusEvolve);
-        });
+              statusEvolve = 0.0f; // hs.resolvePattern(index);
+              thread = std::async(std::launch::async, [&]() {
+                // Questa è una lambda che verrà eseguita nel nuovo thread
+                hs.resolvePattern(index, &statusEvolve);
+              });
             }
           }
           ImGui::EndDisabled();
 
-ImGui::SameLine();
-ImGui::Text("Caricamento: %.1f/100.0", 100.0f * statusEvolve);
-  ImGui::SameLine();
+          ImGui::SameLine();
+          ImGui::Text("Caricamento: %.1f/100.0", 100.0f * statusEvolve);
+          ImGui::SameLine();
 
-           if (ImGui::Button("Stop")) {
-         statusEvolve=-1;
+          if (ImGui::Button("Stop")) {
+            statusEvolve = -1;
           }
           ImGui::Text("Pattern pixelato evoluzione:");
           const std::vector<int8_t> &evolving_data =
               current_pattern_container.getEvolvingPatternVector();
 
           comp.drawGrid(evolving_data, pixel, pixel, "evolving_pattern");
-ImGui::EndGroup();
+          ImGui::EndGroup();
 
-ImGui::SameLine();
+          ImGui::SameLine();
+
+          /*inizio disegno del plot energia ************************/
+
           ImGui::BeginGroup();
+          const std::vector<float> &energy =
+              current_pattern_container.getEnergy();
+          comp.drawPlot(energy);
 
-const std::vector<float>& energy= current_pattern_container.getEnergy();
-    
-
-// Se non ci sono dati, mostra un messaggio
-if (energy.size() == 0) {
-    ImGui::Text("Nessun dato di energia disponibile.");
-} else {
-  ImGui::Text("Andamento dell'energia");
-    // --- Parametri per ImGui::PlotLines ---
-    const char* graph_label = "label";
-    // Il puntatore è lo stesso, ma l'offset farà iniziare ImGui da un punto diverso
-    const float* values = energy.data(); 
-
-    // Calcola min/max SOLO sulla finestra di dati visibile. Questo è un enorme guadagno!
-    float min_val = 0.0f;
-    float max_val = 0.0f;
-    // Prendi un iteratore che punta all'inizio dei dati che ci interessano
-    auto start_it = energy.begin();
-    auto end_it = energy.end();
-
-    if (start_it != end_it) {
-        min_val = *std::min_element(start_it, end_it);
-        max_val = *std::max_element(start_it, end_it);
-
-        float buffer = (max_val - min_val) * 0.1f;
-        min_val -= buffer;
-        max_val += buffer;
-    }
-
-    // Disegna il grafico a linee
-    ImGui::PlotLines(
-        graph_label,
-        values,
-        energy.size(),       // Numero totale di elementi nel vettore originale
-        0,      // Offset di partenza! ImGui inizierà da qui.
-        NULL,
-        min_val,
-        max_val,
-        ImVec2(300, 300)      // Larghezza 0 = riempi, altezza 150 pixel
-    );
-}
-
-
-ImGui::EndGroup();
-
-          
+          ImGui::EndGroup();
         }
+        /*****************fine disegno dei tre
+         * pattern+energia*********************/
+        /***************FINE DELLA CREAZIONE DELLA FINESTRA******************/
 
         ImGui::End();
       }
 
-
-      
       graphics.endFrame();
-
     }
 
   } catch (const std::runtime_error &e) {

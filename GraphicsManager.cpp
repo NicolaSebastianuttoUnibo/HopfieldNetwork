@@ -1,10 +1,10 @@
 #include "GraphicsManager.hpp"
 
 // Includi le implementazioni complete solo nel file .cpp
+#include "ImGuiFileDialog/ImGuiFileDialog.h"
 #include "imgui/backends/imgui_impl_opengl3.h"
 #include "imgui/backends/imgui_impl_sdl2.h"
 #include "imgui/imgui.h"
-#include "ImGuiFileDialog/ImGuiFileDialog.h"
 
 #include <SDL.h>
 #include <SDL_opengl.h>
@@ -65,7 +65,7 @@ void GraphicsManager::initialize() {
 }
 // ... (costruttore, distruttore, initialize, shutdown rimangono uguali)
 
-bool GraphicsManager::beginFrame(std::vector<float*> kill) {
+bool GraphicsManager::beginFrame(std::vector<float *> kill) {
   if (!isInitialized_) {
     return false; // Non può iniziare un frame se non inizializzato
   }
@@ -80,8 +80,8 @@ bool GraphicsManager::beginFrame(std::vector<float*> kill) {
     if (event.type == SDL_WINDOWEVENT &&
         event.window.event == SDL_WINDOWEVENT_CLOSE &&
         event.window.windowID == SDL_GetWindowID(window_)) {
-      for(auto &k: kill){
-        *k=-1.0f;
+      for (auto &k : kill) {
+        *k = -1.0f;
       }
 
       return false; // Segnala al main loop di terminare
@@ -137,18 +137,15 @@ void GraphicsManager::shutdown() {
 
 void GraphicsManager::config() {
 
-        const ImGuiViewport *viewport = ImGui::GetMainViewport();
+  const ImGuiViewport *viewport = ImGui::GetMainViewport();
 
-        ImGui::SetNextWindowPos(viewport->WorkPos);
-        ImGui::SetNextWindowSize(viewport->WorkSize);
+  ImGui::SetNextWindowPos(viewport->WorkPos);
+  ImGui::SetNextWindowSize(viewport->WorkSize);
 
-        ImGuiWindowFlags window_flags = 0;
-        window_flags |= ImGuiWindowFlags_NoTitleBar;
-        window_flags |= ImGuiWindowFlags_NoCollapse;
-        window_flags |=ImGuiWindowFlags_NoResize;
-        window_flags |= ImGuiWindowFlags_NoMove;
-        window_flags |= ImGuiWindowFlags_NoSavedSettings;
-
-
-
+  ImGuiWindowFlags window_flags = 0;
+  window_flags |= ImGuiWindowFlags_NoTitleBar;
+  window_flags |= ImGuiWindowFlags_NoCollapse;
+  window_flags |= ImGuiWindowFlags_NoResize;
+  window_flags |= ImGuiWindowFlags_NoMove;
+  window_flags |= ImGuiWindowFlags_NoSavedSettings;
 }
