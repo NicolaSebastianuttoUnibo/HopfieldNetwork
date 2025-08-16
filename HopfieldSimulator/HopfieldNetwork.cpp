@@ -11,6 +11,9 @@
 
 #include <cmath>
 #include <algorithm>
+#include <complex>
+#include <Eigen/Dense>
+
 
 template <typename neurons_type, typename matrix_type> 
     void HN::HopfieldNetwork<neurons_type,matrix_type>::trasformEigenInVector(){
@@ -50,117 +53,136 @@ trasformEigenInVector();
    
     }
 
-template <typename neurons_type, typename matrix_type>
-const std::vector<neurons_type> HN::HopfieldNetwork<neurons_type, matrix_type>::resolvePattern(const std::vector<neurons_type>& array) {
+// template <typename neurons_type, typename matrix_type>
+// const std::vector<neurons_type> HN::HopfieldNetwork<neurons_type, matrix_type>::resolvePattern(const std::vector<neurons_type>& array) {
     
-    const int num_neurons = array.size();
-    if (num_neurons * num_neurons != W_ij.size()) {
+//     const int num_neurons = array.size();
+//     if (num_neurons * num_neurons != W_ij.size()) {
 
-        throw std::invalid_argument("the pattern cannot be resolved due to dimensions incompatibility: m: " + std::to_string(W_ij.size()) + " a: " + std::to_string(num_neurons));
-    }
+//         throw std::invalid_argument("the pattern cannot be resolved due to dimensions incompatibility: m: " + std::to_string(W_ij.size()) + " a: " + std::to_string(num_neurons));
+//     }
 
-    std::vector<neurons_type> evolving_state = array;
+//     std::vector<neurons_type> evolving_state = array;
 
-    for (int i = 0; i < num_neurons; ++i) {
+//     for (int i = 0; i < num_neurons; ++i) {
         
        
-        matrix_type sum = 0;
-        for (int j = 0; j < num_neurons; ++j) {
-            sum += static_cast<matrix_type>(W_ij(i,j)) * evolving_state[j];
-        }
+//         matrix_type sum = 0;
+//         for (int j = 0; j < num_neurons; ++j) {
+//             sum += static_cast<matrix_type>(W_ij(i,j)) * evolving_state[j];
+//         }
 
-        evolving_state[i] = static_cast<neurons_type>(sum > 0 ? +1 : -1);
-    }
+//         evolving_state[i] = static_cast<neurons_type>(sum > 0 ? +1 : -1);
+//     }
 
-    return evolving_state;
+//     return evolving_state;
+// }
+
+
+template <typename neurons_type, typename matrix_type>
+float HN::HopfieldNetwork<neurons_type, matrix_type>::calculateEnergy(const std::vector<neurons_type>& input) {
+    const int num_neurons = input.size();
+
+    // if (num_neurons != W_ij.rows() || num_neurons != W_ij.cols()) {
+    //     throw std::invalid_argument("Dimensioni incompatibili tra pattern e matrice dei pesi.");
+    // }
+
+    // Eigen::Matrix<matrix_type, Eigen::Dynamic, 1> s(num_neurons);
+    // for (int i = 0; i < num_neurons; ++i) {
+    //     s(i) = static_cast<matrix_type>(input[i]);
+    // }
+
+    // auto energy_complex = s.adjoint() * W_ij * s;
+    // return -0.5f * energy_complex(0, 0).real();
+    return 0.0f;
 }
 
 
-
 template <typename neurons_type, typename matrix_type>
-   float HN::HopfieldNetwork<neurons_type, matrix_type>::calculateDeltaEnergy(std::vector<neurons_type>& input, const int index){
-const int num_neurons =input.size();
-
-        if (num_neurons * num_neurons != W_ij.size()) {
-
-        throw std::invalid_argument("the pattern cannot be resolved due to dimensions incompatibility: m: " + std::to_string(W_ij.size()) + " a: " + std::to_string(num_neurons));
-    }
-float delta=0;
-  for (int i = 0; i < num_neurons; ++i) {
-  delta-=(static_cast<float>(input[i]*input[index])*static_cast<float>(W_ij(i,index)));
-}
-return delta;
-   }
-
-template <typename neurons_type, typename matrix_type>
-   float HN::HopfieldNetwork<neurons_type, matrix_type>::calculateEnergy(std::vector<neurons_type>& input){
+void HN::HopfieldNetwork<neurons_type, matrix_type>::resolvePattern(
+    CSP::CoherenceSetPattern<neurons_type>& cps, float* status) {
 
 
-    
-const int num_neurons =input.size();
-
-        if (num_neurons * num_neurons != W_ij.size()) {
-
-        throw std::invalid_argument("the pattern cannot be resolved due to dimensions incompatibility: m: " + std::to_string(matrix_.size()) + " a: " + std::to_string(num_neurons));
-    }
-float energy=0;
-  for (int i = 1; i < num_neurons; ++i) {
-  for (int j = i+1; j < num_neurons; ++j) {
-energy-=(static_cast<float>(input[i]*input[j])*static_cast<float>(W_ij(i,j)));
-  }}
-
-    return energy;
-   }
-
-
-
-template <typename neurons_type, typename matrix_type>
-   void  HN::HopfieldNetwork<neurons_type, matrix_type>::resolvePattern(CSP::CoherenceSetPattern<neurons_type>& cps, float* status){
-
-    EP::EvolvingPattern<neurons_type>& ep=cps.getEvolvingPattern();
+    float count=0;
+        EP::EvolvingPattern<neurons_type>& ep=cps.getEvolvingPattern();
   std::vector<neurons_type>& getVector=ep.getPattern();
   std::vector<float>& getEnergy=ep.getEnergy();
 const int num_neurons =getVector.size();
 
 
- const int totalIteration=(num_neurons)*num_neurons;
-int count=0;
-
-    if (num_neurons * num_neurons != W_ij.size()) {
-
-        throw std::invalid_argument("the pattern cannot be resolved due to dimensions incompatibility: m: " + std::to_string(W_ij.size()) + " a: " + std::to_string(num_neurons));
+    if (num_neurons != W_ij.rows()) {
+        throw std::invalid_argument("Dimensioni pattern/matrice non compatibili.");
     }
+
     getEnergy.clear();
-    getEnergy.reserve(num_neurons+10);
+    getEnergy.reserve(num_neurons);
+count++;
     getEnergy.push_back(calculateEnergy(getVector));
+     for (int i = 0; i < num_neurons; ++i) {
+        neurons_type best_point;
+        matrix_type sum=0; 
+     for (int j = 0; j < num_neurons; ++j) {
+     sum+=(W_ij(i,j)*static_cast<matrix_type>(getVector[j]));
+     std::cout<<W_ij(i,j)<<"\n";
 
-float thisdelta=0;
-  for (int i = 0; i < num_neurons; ++i) {
+}////for j
+     double min_dist_sq = std::numeric_limits<double>::max();
+     
+    for (const auto& candidate_point : POINTS) {
+     double dist_sq = std::norm(sum - static_cast<matrix_type>(candidate_point));
+
+        // std::cout<<static_cast<int>(sum)<<","<<static_cast<int>(candidate_point)<<"\n";
+
+    if (dist_sq < min_dist_sq) {
+        min_dist_sq = dist_sq;
+        best_point = candidate_point;
+    }
+
+ }
+ getVector[i]=best_point;
+*status++;   
+    }///for i
+
+   
+    // for (int i = 0; i < num_neurons; ++i) {
+    //     if (status && *status < 0) return;
+
+
+    //     matrix_type local_field;
+    //     for (int j = 0; j < num_neurons; ++j) {
+    //         local_field += W_ij(i, j) * static_cast<matrix_type>(pattern_vector[j]);
+    //     }
+        
+    //     const neurons_type old_state = pattern_vector[i];
+
+    
+    //     neurons_type new_state = POINTS[0];
+    //     double min_dist_sq = std::norm(local_field - static_cast<matrix_type>(new_state));
+
+    //     for (size_t k = 1; k < POINTS.size(); ++k) {
+    //         const auto& candidate_point = POINTS[k];
+    //         double dist_sq = std::norm(local_field - static_cast<matrix_type>(candidate_point));
             
-       thisdelta=0;
-        matrix_type sum = 0;
-        for (int j = 0; j < num_neurons; ++j) {
-if(*status<0){return;}
- count++;
-
-thisdelta-=(static_cast<float>(getVector[i]*getVector[j])*static_cast<float>(W_ij(i,j)));
-           
-               *status = static_cast<float>(count) / totalIteration;
-             sum += static_cast<matrix_type>(W_ij(i,j)) * getVector[j];
+    //         if (dist_sq < min_dist_sq) {
+    //             min_dist_sq = dist_sq;
+    //             new_state = candidate_point;
+    //         }
+    //     }
+        
        
-            }///fine  indice j
+    //     pattern_vector[i] = new_state;
 
-         getVector[i] = static_cast<neurons_type>(sum > 0 ? +1 : -1);
-         getEnergy.push_back(getEnergy.back()+calculateDeltaEnergy(getVector,i)-thisdelta );
+      
+    //     matrix_type state_change = static_cast<matrix_type>(new_state) - static_cast<matrix_type>(old_state);
+    //     float delta_E = -std::real(std::conj(state_change) * local_field);
 
-          
+    //     energy_history.push_back(energy_history.back() + delta_E);
 
-    }/// fine indice i 
-
-
-  
-
-   }
+    //     if (status) {
+    //         *status = static_cast<float>(i + 1) / num_neurons;
+    //     }
+    // }
+}
 
 
    template <typename neurons_type, typename matrix_type> 
