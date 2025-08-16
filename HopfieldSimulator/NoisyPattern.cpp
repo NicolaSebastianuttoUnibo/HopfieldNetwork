@@ -4,7 +4,9 @@
 #include <random>
 #include <cstdint>
 #include <cassert>
-
+#include <complex>
+#include <algorithm> 
+#include <iterator>
 //constructors
 template <typename T> 
 NP::NoisyPattern<T>::NoisyPattern(const std::vector<T> &sourcePattern, const float noise) : pattern_(sourcePattern)  {
@@ -19,12 +21,14 @@ if (noise < 0.0f || noise > 1.0f) {
     }
 
 
-std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+std::uniform_real_distribution<float> real(0.0f, 1.0f);
+std::uniform_int_distribution<int> integer(0, static_cast<int>(POINTS.size() - 1));
 auto& generator = getRandomGenerator();
 
      for (auto &val : pattern_) {
-          if (dist(generator) < noise) {
-             val = -val;
+          if (real(generator) < noise) {
+             int random_index = integer(generator);
+             val = POINTS[random_index];
      }
 
 
@@ -42,8 +46,14 @@ void NP::NoisyPattern<T>::flipPixel(const std::size_t pixelIndex) {
 if (pixelIndex>=pattern_.size()) {
 throw std::invalid_argument("pixelIndex is out of bounds.");
 }
+ auto it = std::find(POINTS.begin(), POINTS.end(), pattern_[pixelIndex]);
+
+  
+    if (it == POINTS.end()) {
+        throw std::invalid_argument("Current pixel value is not found in POINTS set.");
+    }
+    pattern_[pixelIndex] = POINTS[(std::distance(POINTS.begin(), it) + 1) % POINTS.size()];
 
 
-      pattern_[pixelIndex] *= -1;
 
 }

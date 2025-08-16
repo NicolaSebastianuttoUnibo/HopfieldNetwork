@@ -11,7 +11,6 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
-#include <complex>
 
 int main(int, char **) {
   try {
@@ -19,8 +18,8 @@ int main(int, char **) {
     /********************INIZIO ELENCO VARIABILI********************/
 
     GraphicsManager graphics; // gestisce le librerie grafiche di IMGUI e SDL
-    Comp<std::complex<int8_t>> comp; // permette di creare griglie, grafici in modo semplice
-     HS::HopfieldSimulator<std::complex<int8_t>, std::complex<double>>
+    Comp<int8_t> comp; // permette di creare griglie, grafici in modo semplice
+    HS::HopfieldSimulator<int8_t, double>
         hs;        // l'oggetto con cui possiamo personalizzare il nostro stato
     int pixel = 8; // i numeri di pixel che deve avere la classe
     int pixel_slider = 8; // i pixel indicati dallo slider
@@ -36,8 +35,8 @@ int main(int, char **) {
     std::future<void> thread; // mi lancia in parallelo le operazioni complesse
     static char pathBuffer[256] =
         "trainings/nomeDellaReteDiHopfield"; // nome di default per il
-//                                              // salvataggio dei file dei
-//                                              // trainings
+                                             // salvataggio dei file dei
+                                             // trainings
     float statusTrain =
         0.0f; // mi indica la percentuale di caricamento del training
     float statusEvolve =
@@ -54,9 +53,9 @@ int main(int, char **) {
     fdh.onSuccess = [&](const std::string &filePath) {
       hs.emplace_pattern(filePath, pixel,
           pixel);
-      CSP::CoherenceSetPattern<int8_t> cps(
-          filePath, pixel,
-          pixel);        // per ogni file crea la classe che gestisce un pattern
+      // CSP::CoherenceSetPattern<int8_t> cps(
+      //     filePath, pixel,
+      //     pixel);        // per ogni file crea la classe che gestisce un pattern
       // hs.push_back(cps); // e lo inserisce nella classe che gestisce più pattern
     };
     fdh.onDialogClose = [&] {
@@ -72,10 +71,10 @@ int main(int, char **) {
       /// pesi
       int numRows = 0;
       int numColumns = 0;
-      std::vector<std::complex<double>> matrix;
+      std::vector<double> matrix;
 
       // funzione che mi restituisce i dati
-      // setElementsByFile(filePath, &numRows, &numColumns, &matrix);
+      setElementsByFile(filePath, &numRows, &numColumns, &matrix);
       if (numRows != numColumns) {
         /// il main è costruito per essere quadrato
         throw std::runtime_error("Le dimensioni della matrice non valida: il "
@@ -83,7 +82,7 @@ int main(int, char **) {
       }
 
       pixel = numRows;                             // assegno il dato ottenuto
-      // hs.setTraining(numRows, numColumns, matrix); // assegno il training
+      hs.setTraining(numRows, numColumns, matrix); // assegno il training
       trained = true; // affermo che è stato trainato
     };
     fdh2.onDialogClose = [&] {
@@ -288,7 +287,7 @@ int main(int, char **) {
 
           const auto &current_pattern_container = hs.getPatterns()[index];
           ImGui::Text("Pattern pixelato originale:");
-          const std::vector<std::complex<int8_t>> &training_data =
+          const std::vector<int8_t> &training_data =
               current_pattern_container->getTrainingPatternVector();
           comp.drawGrid(training_data, pixel, pixel, "training_pattern");
           ImGui::EndGroup();
@@ -303,7 +302,7 @@ int main(int, char **) {
           ImGui::EndDisabled();
 
           ImGui::Text("Pattern pixelato corrotto:");
-          const std::vector<std::complex<int8_t>> &noisy_data =
+          const std::vector<int8_t> &noisy_data =
               current_pattern_container->getNoisyPatternVector();
 
           comp.drawGrid(noisy_data, pixel, pixel, "noisy_pattern",
@@ -337,7 +336,7 @@ int main(int, char **) {
             statusEvolve = -1;
           }
           ImGui::Text("Pattern pixelato evoluzione:");
-          const std::vector<std::complex<int8_t>> &evolving_data =
+          const std::vector<int8_t> &evolving_data =
               current_pattern_container->getEvolvingPatternVector();
 
           comp.drawGrid(evolving_data, pixel, pixel, "evolving_pattern");
@@ -354,8 +353,8 @@ int main(int, char **) {
 
           ImGui::EndGroup();
         }
-//         // /*****************fine disegno dei tre pattern+energia*************/
-//         // /***************FINE DELLA CREAZIONE DELLA FINESTRA******************/
+        // /*****************fine disegno dei tre pattern+energia*************/
+        // /***************FINE DELLA CREAZIONE DELLA FINESTRA******************/
 
         ImGui::End();
       }

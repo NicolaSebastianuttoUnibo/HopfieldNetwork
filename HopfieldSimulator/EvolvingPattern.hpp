@@ -2,6 +2,7 @@
 #define EVOLVING_PATTERN_HPP
 #include<vector>
 #include <cstdint>
+#include <complex>
 
 
 
@@ -42,7 +43,8 @@ void clearEnergy(){
 
 template class EvolvingPattern<int8_t>;
 template class EvolvingPattern<int>;
-
+template class EvolvingPattern<std::complex<int>>;
+template class EvolvingPattern<std::complex<int8_t>>;
 
 } //namespace EP
 

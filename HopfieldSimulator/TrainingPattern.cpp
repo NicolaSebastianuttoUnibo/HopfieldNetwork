@@ -9,7 +9,9 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <array>
 #include <cstdint>
+#include <cmath>
 
 
 
@@ -84,7 +86,11 @@ void TP::TrainingPattern<T>::regrid(const std::size_t numColumns, const std::siz
     }
 
 
+
+  
+  const float maxLum = 256.0f;
   const float threshold = 128.0f;
+  
     const std::size_t integral_width = imgWidth_ + 1;
 
    
@@ -119,11 +125,17 @@ void TP::TrainingPattern<T>::regrid(const std::size_t numColumns, const std::siz
         average_luminance = static_cast<float>(total_luminance) / pixel_count;
       }
 
-      if (average_luminance > threshold) {
-        pattern_.push_back(+1); // Chiaro
-      } else {
-        pattern_.push_back(-1); // Scuro
-      }
+      const int N=POINTS.size();
+for(int i=0;i<N;i++){
+  if(average_luminance>=i*maxLum/N&&average_luminance<(i+1)*maxLum/N){
+    pattern_.push_back(POINTS[i]);
+  }
+}
+      // if (average_luminance > threshold) {
+      //   pattern_.push_back(+1); // Chiaro
+      // } else {
+      //   pattern_.push_back(-1); // Scuro
+      // }
     }
   }
 

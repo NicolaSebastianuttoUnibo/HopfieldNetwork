@@ -4,6 +4,7 @@
 #include "EvolvingPattern.hpp"
 #include "CoherenceSetPattern.hpp"
  #include <stdexcept> 
+#include <complex>
 
 
 template <typename T> 

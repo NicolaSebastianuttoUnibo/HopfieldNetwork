@@ -4,10 +4,14 @@
 #include <vector>
 #include <cstdint>
 #include <memory>
-
+ #include "MathDimension.hpp"
+#include <cmath>
+#include <numeric>
+#include <complex>
 
 
 namespace TP{
+
 
 
 struct StbiImageDeleter {
@@ -16,8 +20,11 @@ struct StbiImageDeleter {
 
 template <typename T = int8_t> 
 
-
 class TrainingPattern {
+
+   static constexpr std::array<T, static_cast<unsigned int>(std::pow(2,MD::getMathematicalDimension<T>()))> POINTS = MD::getMathematicalVertex<T>();
+
+
   std::string path_;
   std::vector<T> pattern_;
 
@@ -39,6 +46,8 @@ public:
 
 template class TrainingPattern<int8_t>;
 template class TrainingPattern<int>;
+template class TrainingPattern<std::complex<int>>;
+template class TrainingPattern<std::complex<int8_t>>;
 
 
 } //namespace TP

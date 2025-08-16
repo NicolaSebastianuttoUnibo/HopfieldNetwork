@@ -4,7 +4,7 @@
 #include "imgui/backends/imgui_impl_opengl3.h"
 #include "imgui/backends/imgui_impl_sdl2.h"
 #include "imgui/imgui.h"
-
+#include <iostream>
 template <typename T>
 void Comp<T>::drawGrid(const std::vector<T> &data, int cols, int rows,
                        const char *id_grid,
@@ -29,8 +29,12 @@ void Comp<T>::drawGrid(const std::vector<T> &data, int cols, int rows,
   const float cell_size_x = canvas_sz.x / cols;
   const float cell_size_y = canvas_sz.y / rows;
 
+
   const ImU32 COLOR_BLACK = IM_COL32(50, 50, 50, 255);
   const ImU32 COLOR_WHITE = IM_COL32(255, 255, 255, 255);
+
+
+
   const ImU32 COLOR_HOVER = IM_COL32(100, 100, 255, 150);
 
   for (int row = 0; row < rows; ++row) {
@@ -44,7 +48,13 @@ void Comp<T>::drawGrid(const std::vector<T> &data, int cols, int rows,
       float x1 = x0 + cell_size_x;
       float y1 = y0 + cell_size_y;
 
-      ImU32 cell_color = (data[index] == 1) ? COLOR_WHITE : COLOR_BLACK;
+ auto it = std::find(POINTS.begin(), POINTS.end(), data[index]);
+    if (it == POINTS.end()) {
+        throw std::invalid_argument("Current pixel value is not found in POINTS set.");
+    }
+int color=50+200*std::distance(POINTS.begin(), it)/POINTS.size();
+const ImU32 COLOR_BLACK = IM_COL32(color, color, color, 255);
+      ImU32 cell_color =COLOR_BLACK;
       draw_list->AddRectFilled(ImVec2(x0, y0), ImVec2(x1, y1), cell_color);
     }
   }

@@ -10,6 +10,10 @@
 #include <functional>
 #include <stdexcept>
 #include <string>
+#include <cmath>
+#include <complex>
+#include "HopfieldSimulator/MathDimension.hpp"
+
 template <typename matrix_type>
 void setElementsByFile(const std::string &filePath, int *a, int *b,
                        std::vector<matrix_type> *m) {
@@ -132,6 +136,7 @@ public:
 template <typename T = int8_t>
 
 struct Comp {
+   static constexpr std::array<T, static_cast<unsigned int>(std::pow(2,MD::getMathematicalDimension<T>()))> POINTS = MD::getMathematicalVertex<T>();
 
   void drawGrid(const std::vector<T> &data, int cols, int rows,
                 const char *id_grid,
@@ -143,5 +148,6 @@ struct Comp {
 
 template struct Comp<int8_t>;
 template struct Comp<int>;
+template struct Comp<std::complex<int8_t>>;
 
 #endif // GRAPHICS_MANAGER_H

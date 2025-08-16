@@ -7,6 +7,8 @@
 #include <vector>
 #include <string>
  #include <stdexcept> 
+#include <complex>
+
 
 namespace HN {
   template <typename, typename>
@@ -27,7 +29,7 @@ class CoherenceSetPattern {
   size_t cols_;
   size_t rows_;
    EP::EvolvingPattern<T>& getEvolvingPattern()  noexcept{return ep_;}
-   EP::EvolvingPattern<T> getEvolvingPatternCopy()  noexcept{return ep_;}
+  //  EP::EvolvingPattern<T> getEvolvingPatternCopy()  noexcept{return ep_;}
 
 public:
   explicit CoherenceSetPattern(const std::string &path, const std::size_t numColumns, const std::size_t numRows);
@@ -56,7 +58,8 @@ public:
 
 template class CoherenceSetPattern<int8_t>;
 template class CoherenceSetPattern<int>;
-
+template class CoherenceSetPattern<std::complex<int>>;
+template class CoherenceSetPattern<std::complex<int8_t>>;
 
 } //namespace
 

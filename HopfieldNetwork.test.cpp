@@ -9,7 +9,7 @@ TEST_CASE("Testing the class handling a floating point data sample") {
 
   //   HN::HopfieldNetwork<int, double> hn;
   //   std::vector<std::vector<int>> patterns{{-1, 1, 1, -1}, {1, -1, -1, 1}};
-  //   hn.trainNetwork(patterns, [](const auto &p) { return p; });
+  //   hn.trainNetworkHebb(patterns, [](const auto &p) { return p; });
   //   std::vector<int> corrupted = {1, -1, 1, -1};
 
   //   std::vector<double> matrix = {0,   -0.5, -0.5, 0.5, -0.5, 0,
@@ -44,7 +44,7 @@ TEST_CASE("Testing the class handling a floating point data sample") {
   //   // Pattern di addestramento
   //   std::vector<std::vector<int>> patterns{{-1, -1, -1, -1}, {1, 1, -1, -1}};
 
-  //   hn.trainNetwork(patterns, [](const auto &p) { return p; });
+  //   hn.trainNetworkHebb(patterns, [](const auto &p) { return p; });
 
   //   // Pattern corrotto da testare (basato sul primo pattern con un bit
   //   // flippato)
@@ -74,7 +74,7 @@ TEST_CASE("Testing the class handling a floating point data sample") {
   //                                           1,  -1, -1, 1,  -1, 1,  -1, 1,
   //                                           -1, -1, -1, -1, -1, -1, -1, 1}};
 
-  //   hn.trainNetwork(patterns, [](const auto &p) { return p; });
+  //   hn.trainNetworkHebb(patterns, [](const auto &p) { return p; });
 
   //   // Pattern corrotto da testare (basato sul primo pattern con un bit
   //   // flippato)
@@ -168,7 +168,7 @@ TEST_CASE("Testing the class handling a floating point data sample") {
   //        1,  1,  -1, 1,  1,  -1, 1,  -1, 1,  1,  -1, 1,  1,  -1, -1, 1,  1,
   //        -1, -1, 1,  1,  -1, 1,  1,  -1, -1, 1,  1,  -1, -1, -1, 1,  1}};
 
-  //   hn.trainNetwork(patterns, [](const auto &p) { return p; });
+  //   hn.trainNetworkHebb(patterns, [](const auto &p) { return p; });
 
   //   // Pattern corrotto da testare (basato sul primo pattern con un bit
   //   // flippato)
