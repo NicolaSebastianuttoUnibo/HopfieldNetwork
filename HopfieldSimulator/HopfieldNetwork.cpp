@@ -13,7 +13,7 @@
 #include <algorithm>
 #include <complex>
 #include <Eigen/Dense>
-
+#include "cast.hpp"
 
 template <typename neurons_type, typename matrix_type> 
     void HN::HopfieldNetwork<neurons_type,matrix_type>::trasformEigenInVector(){
@@ -122,14 +122,14 @@ count++;
         neurons_type best_point;
         matrix_type sum=0; 
      for (int j = 0; j < num_neurons; ++j) {
-     sum+=(W_ij(i,j)*static_cast<matrix_type>(getVector[j]));
+     sum+=(W_ij(i,j)*custom_cast<matrix_type>(getVector[j]));
      std::cout<<W_ij(i,j)<<"\n";
 
 }////for j
      double min_dist_sq = std::numeric_limits<double>::max();
      
     for (const auto& candidate_point : POINTS) {
-     double dist_sq = std::norm(sum - static_cast<matrix_type>(candidate_point));
+     double dist_sq = std::norm(sum - custom_cast<matrix_type>(candidate_point));
 
         // std::cout<<static_cast<int>(sum)<<","<<static_cast<int>(candidate_point)<<"\n";
 
