@@ -22,8 +22,6 @@ namespace CSP {
 template <typename T = int8_t> 
 class CoherenceSetPattern {
 
- template<typename NT, typename MT> friend class HN::HopfieldNetwork;
-
 
   private:
   TP::TrainingPattern<T> tp_;
@@ -56,8 +54,14 @@ public:
   void updateEvolvingState(const std::vector<T>& newPattern);
   
 
-
-
+template <typename MatrixType = double> 
+void resolveEvolvingPattern(HN::HopfieldNetwork<T, MatrixType>& network, std::atomic<float>* status) {
+     
+  network.resolvePattern(this->ep_, status);
+        }
+void clearEnergy() {
+            ep_.getEnergy().clear();
+        }
 
 
 };

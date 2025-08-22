@@ -89,12 +89,7 @@ int N=input.size();
 
 }
 
-///clearEnergy()
-   template <typename neurons_type, typename matrix_type> 
- void  HN::HopfieldNetwork<neurons_type,matrix_type>::clearEnergy(CSP::CoherenceSetPattern<neurons_type>& cps){
- EP::EvolvingPattern<neurons_type>& ep=cps.getEvolvingPattern();
-ep.clearEnergy();
-   }
+
 
 //resolvePattern() const
 
@@ -144,19 +139,9 @@ return getVector;
 
 
 
-
-
-
-
-
-
-template <typename neurons_type, typename matrix_type>
-void HN::HopfieldNetwork<neurons_type, matrix_type>::resolvePattern(
-    CSP::CoherenceSetPattern<neurons_type>& cps, std::atomic<float>*  status) {
-
-
-    float count=0;
-        EP::EvolvingPattern<neurons_type>& ep=cps.getEvolvingPattern();
+    template <typename neurons_type, typename matrix_type>
+void HN::HopfieldNetwork<neurons_type, matrix_type>::resolvePattern(EP::EvolvingPattern<neurons_type>& ep, std::atomic<float>* status){
+      float count=0;
    std::vector<neurons_type>& getVector=ep.getPattern();
   
   std::vector<float>& getEnergy=ep.getEnergy();
@@ -208,7 +193,4 @@ count++;
         }
 
 }////for i
-
-
 }
-

@@ -28,7 +28,10 @@ const std::vector<std::unique_ptr<CSP::CoherenceSetPattern<neurons_type>>>& HS::
 template<typename neurons_type, typename matrix_type>
 
 void HS::HopfieldSimulator<neurons_type, matrix_type>::clear(const int index){
-  hn_.clearEnergy(*patterns_[index]);
+ 
+       patterns_[index]->clearEnergy();
+
+
 }
 
 //corruptPattern()
@@ -106,7 +109,7 @@ template <typename neurons_type, typename matrix_type>
     
     if(patterns_.size()==0){
 return;}
-     hn_.resolvePattern(*patterns_[index], status);
+     patterns_[index]->resolveEvolvingPattern(hn_,status);
 }
 
 ///saveFileTraining()

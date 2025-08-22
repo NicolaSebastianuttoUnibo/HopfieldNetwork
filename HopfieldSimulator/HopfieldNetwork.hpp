@@ -42,9 +42,8 @@ const matrix_type localField(const int index, const std::vector<neurons_type>& i
 
 
    float calculateEnergy(const std::vector<neurons_type>& input);
-   void  clearEnergy(CSP::CoherenceSetPattern<neurons_type>& cps);
     const std::vector<neurons_type> resolvePattern(const std::vector<neurons_type>& array) const;
-    void  resolvePattern(CSP::CoherenceSetPattern<neurons_type>& cps, std::atomic<float>* status=nullptr);
+    void  resolvePattern(EP::EvolvingPattern<neurons_type>& ep, std::atomic<float>* status=nullptr);
 
 
 
