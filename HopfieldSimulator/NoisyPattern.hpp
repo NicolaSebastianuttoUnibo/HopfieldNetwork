@@ -19,9 +19,10 @@ inline  std::mt19937& getRandomGenerator() {
 template <typename T = int8_t> 
 class NoisyPattern {
 
-static constexpr
+     static constexpr
    std::array<T,MD::getMathematicalNumberVertex<T>()>POINTS =
     MD::getMathematicalVertex<T>();
+
   std::vector<T> pattern_;
     void generateCorruptedPattern(const float noise=0.1f);
 public:

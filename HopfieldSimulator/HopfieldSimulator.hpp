@@ -18,11 +18,7 @@ template <typename neurons_type = int8_t, typename matrix_type = double>
   class HopfieldSimulator {
 
     std::vector<std::unique_ptr<CSP::CoherenceSetPattern<neurons_type>>> patterns_;
-
-  std::vector<bool> isStateEvolving_;
   HN::HopfieldNetwork<neurons_type,matrix_type> hn_;
-
-  bool isHopfieldGoing() const;
   mutable std::recursive_mutex mtx_;
   
 public:

@@ -20,6 +20,9 @@ template <typename neurons_type, typename matrix_type>
     void HN::HopfieldNetwork<neurons_type,matrix_type>::trasformVectorInEigen(){
   
   const int dim =std::sqrt(matrix_.size());
+    if(dim*dim!=matrix_.size()){
+       throw std::logic_error("Dimensione non compatibile");
+    }
         W_ij.resize(dim, dim);
     W_ij = Eigen::Map<Eigen::Matrix<matrix_type, Eigen::Dynamic, Eigen::Dynamic>>(
         matrix_.data(), dim, dim

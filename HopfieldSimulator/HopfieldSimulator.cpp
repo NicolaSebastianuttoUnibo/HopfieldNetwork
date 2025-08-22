@@ -9,17 +9,6 @@
 #include <iostream>
 
 
-//private function
-//isHopfieldGoing()
-
-template <typename neurons_type, typename matrix_type> 
- bool HS::HopfieldSimulator<neurons_type,matrix_type>::isHopfieldGoing() const{
-for(const auto &element : isStateEvolving_){
-  if(element==true){return true;}
-}
-return false;
-}
-
 //public function
 ///getPatterns()
 
@@ -47,10 +36,6 @@ template <typename neurons_type, typename matrix_type>
 
 void HS::HopfieldSimulator<neurons_type,matrix_type>::corruptPattern(const size_t index, const float noise) {
   std::lock_guard<std::recursive_mutex> lock(mtx_);
-
-  
-  if(isStateEvolving_[index]==true){return;}
-
  
   patterns_[index]->reCorrupt(noise);
 }
@@ -60,14 +45,12 @@ template<typename neurons_type, typename matrix_type>
 void HS::HopfieldSimulator<neurons_type, matrix_type>::emplace_pattern(const std::string& path, const int a, const int b) {
     patterns_.emplace_back(std::make_unique<CSP::CoherenceSetPattern<neurons_type>>(path,  a,  b));
   
-    isStateEvolving_.push_back(false);
   }
   
 template<typename neurons_type, typename matrix_type>
 void HS::HopfieldSimulator<neurons_type, matrix_type>::emplace_pattern(const float noise, const int a, const int b) {
     patterns_.emplace_back(std::make_unique<CSP::CoherenceSetPattern<neurons_type>>(noise,  a,  b));
   
-    isStateEvolving_.push_back(false);
   }
 
 
@@ -86,7 +69,6 @@ template <typename neurons_type, typename matrix_type>
   void HS::HopfieldSimulator<neurons_type,matrix_type>::generatePattern(const float noise, const std::size_t numColumns, const std::size_t numRows){
        patterns_.emplace_back(std::make_unique<CSP::CoherenceSetPattern<neurons_type>>(noise,  numColumns,  numRows));
   
-    isStateEvolving_.push_back(false);
   }
 
 ///regrid()
@@ -94,7 +76,6 @@ template <typename neurons_type, typename matrix_type>
 void HS::HopfieldSimulator<neurons_type,matrix_type>::regrid(size_t numColumns, size_t numRows) {
 
   std::lock_guard<std::recursive_mutex> lock(mtx_);
-  if(isHopfieldGoing()){return;}
 
 for(auto &element : patterns_){
   element->regrid(numColumns,  numRows);
@@ -109,7 +90,6 @@ void HS::HopfieldSimulator<neurons_type,matrix_type>::removePattern(const size_t
 
   if (index < patterns_.size()) {
     patterns_.erase(patterns_.begin() + index);
-    isStateEvolving_.erase(isStateEvolving_.begin() + index);
   }
   else{
   throw std::runtime_error("The pattern you want to delete doesn't exist");
@@ -199,7 +179,6 @@ template <typename neurons_type, typename matrix_type>
   void HS::HopfieldSimulator<neurons_type,matrix_type>::trainNetworkHebb(float* status){
   std::lock_guard<std::recursive_mutex> lock(mtx_);
    
-if(isHopfieldGoing()){return;}
     auto function = [](const std::unique_ptr<CSP::CoherenceSetPattern<neurons_type>>& csp_ptr){
        
         return csp_ptr->getTrainingPatternVector();
@@ -216,7 +195,6 @@ template <typename neurons_type, typename matrix_type>
   void HS::HopfieldSimulator<neurons_type,matrix_type>::trainNetworkWithPseudoinverse(float* status){
   std::lock_guard<std::recursive_mutex> lock(mtx_);
   
-if(isHopfieldGoing()){return;}
     auto function = [](const std::unique_ptr<CSP::CoherenceSetPattern<neurons_type>>& csp_ptr){
        
         return csp_ptr->getTrainingPatternVector();

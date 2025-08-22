@@ -22,8 +22,11 @@ template <typename neurons_type = int8_t, typename matrix_type = double>
 
 class HopfieldNetwork{
     private:
-    std::array<T,MD::getMathematicalNumberVertex<T>()>POINTS =
-    MD::getMathematicalVertex<T>();
+    
+       static constexpr
+   std::array<neurons_type,MD::getMathematicalNumberVertex<neurons_type>()>POINTS =
+    MD::getMathematicalVertex<neurons_type>();
+
     Eigen::Matrix<matrix_type, Eigen::Dynamic, Eigen::Dynamic> W_ij;
     std::vector<matrix_type> matrix_;
     void trasformEigenInVector();
@@ -88,7 +91,9 @@ void HN::HopfieldNetwork<neurons_type, matrix_type>::trainNetworkWithHebb(const 
             *status = static_cast<float>(count) / totalIteration;}
 
     }///for patterns
-       W_ij.diagonal().setZero();
+   W_ij.diagonal().setZero();
+        // metodo alternativo per fare la stessa cosa ma funzionante solo per numeri reali e non per numeri complessi 
+        //     W_ij = Eigen::Matrix<matrix_type, Eigen::Dynamic, Eigen::Dynamic>::Zero(numberNeurons, numberNeurons);
 
         // for (int i = 0; i < numberNeurons; ++i) {
         //     for (int j = i; j < numberNeurons; ++j) {
@@ -103,13 +108,12 @@ void HN::HopfieldNetwork<neurons_type, matrix_type>::trainNetworkWithHebb(const 
                 
                
         //         if(i==j){continue;}
-        //           matrix_type product_p_ij = static_cast<matrix_type>(p[i] * p[j]);
-        //     matrix_[i * numberNeurons + j] += product_p_ij * norm_factor;
-        //     matrix_[j * numberNeurons + i] += product_p_ij * norm_factor;
+        //           matrix_type product_p_ij = static_cast<matrix_type>(p[i] * p[j])* norm_factor;
+        //     W_ij(i,j) += product_p_ij ;
+        //     W_ij(j,i) += product_p_ij ;
             
         //     }
         // }
-        // trasformVectorInEigen();
 
 
 
