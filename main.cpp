@@ -178,7 +178,7 @@ int main(int, char **) {
           if (ImGui::Button("Train Hopfield Network")) {
             trained = true;
             is_operation_in_progress = true; // Imposta lo stato a "in corso"
-            statusTrain = 0.0f;              // Resetta la barra di progresso
+           statusTrain.store(0.0f, std::memory_order_relaxed);              // Resetta la barra di progresso
 
             // Avvia trainNetwork in un thread separato usando std::async
             thread = std::async(std::launch::async, [&]() {
@@ -239,10 +239,10 @@ int main(int, char **) {
          * status***************************/
         ImGui::SameLine();
         if (ImGui::Button("Stop!")) {
-          statusTrain = -1;
+          statusTrain.store(-1.0f, std::memory_order_relaxed);
         }
         ImGui::SameLine();
-        ImGui::Text("Caricamento: %.1f/100.0", 100.0f * statusTrain);
+        ImGui::Text("Caricamento: %.1f/100.0", 100.0f * statusTrain.load(std::memory_order_relaxed));
 
         /************fine sezione training****************/
         /****************inizio sezione avanti e indietro**************/
@@ -341,7 +341,7 @@ int main(int, char **) {
           ImGui::BeginDisabled(!trained || is_operation_in_progress);
           {
             if (ImGui::Button("Evolvi")) {
-              statusEvolve = 0.0f; // hs.resolvePattern(index);
+             statusEvolve.store(-1.0f, std::memory_order_relaxed); // hs.resolvePattern(index);
               thread = std::async(std::launch::async, [&]() {
                 // Questa è una lambda che verrà eseguita nel nuovo thread
                 hs.resolvePattern(index, &statusEvolve);
@@ -351,11 +351,11 @@ int main(int, char **) {
           ImGui::EndDisabled();
 
           ImGui::SameLine();
-          ImGui::Text("Caricamento: %.1f/100.0", 100.0f * statusEvolve);
+          ImGui::Text("Caricamento: %.1f/100.0", 100.0f * statusEvolve.load(std::memory_order_relaxed));
           ImGui::SameLine();
 
           if (ImGui::Button("Stop")) {
-            statusEvolve = -1;
+statusEvolve.store(-1.0f, std::memory_order_relaxed);
           }
           ImGui::Text("Pattern pixelato evoluzione:");
           const std::vector<neurons_type> &evolving_data =
