@@ -8,28 +8,8 @@
 
 
 //private function
-//trasformEigenInVector()
-template <typename neurons_type, typename matrix_type> 
-    void HN::HopfieldNetwork<neurons_type,matrix_type>::trasformEigenInVector(){
-    matrix_.resize(W_ij.size());
-    std::copy(W_ij.data(), W_ij.data() + W_ij.size(), matrix_.begin());
-
-    }
-    //trasformVectorInEigen()
-template <typename neurons_type, typename matrix_type> 
-    void HN::HopfieldNetwork<neurons_type,matrix_type>::trasformVectorInEigen(){
-  
-  const int dim =std::sqrt(matrix_.size());
-    if(dim*dim!=matrix_.size()){
-       throw std::logic_error("Dimensione non compatibile");
-    }
-        W_ij.resize(dim, dim);
-    W_ij = Eigen::Map<Eigen::Matrix<matrix_type, Eigen::Dynamic, Eigen::Dynamic>>(
-        matrix_.data(), dim, dim
-    );
 
 
-    }
     ///localField()
 template <typename neurons_type, typename matrix_type>
 const matrix_type HN::HopfieldNetwork<neurons_type, matrix_type>::localField(const int index, const std::vector<neurons_type>& input){
@@ -55,9 +35,10 @@ const int num_neurons = input.size();
 ///public function
 //getTraining()
 template <typename neurons_type, typename matrix_type> 
-     const  std::vector<matrix_type>& HN::HopfieldNetwork<neurons_type,matrix_type>::getTraining() {
-trasformEigenInVector();
-     return  matrix_;
+     const  std::vector<matrix_type> HN::HopfieldNetwork<neurons_type,matrix_type>::getTraining() {
+std::vector<matrix_type> matrix(W_ij.size());
+  std::copy(W_ij.data(), W_ij.data() + W_ij.size(), matrix.begin());
+        return  matrix;
 
    
     }
@@ -65,8 +46,17 @@ trasformEigenInVector();
 
 template <typename neurons_type, typename matrix_type> 
     void HN::HopfieldNetwork<neurons_type,matrix_type>::setTraining(std::vector<matrix_type>& matrix){
-matrix_=matrix;
-       trasformVectorInEigen();
+
+        
+const int dim =std::sqrt(matrix.size());
+    if(dim*dim!=matrix.size()){
+       throw std::logic_error("Dimensione non compatibile");
+    }
+        W_ij.resize(dim, dim);
+    W_ij = Eigen::Map<Eigen::Matrix<matrix_type, Eigen::Dynamic, Eigen::Dynamic>>(
+        matrix.data(), dim, dim
+    );
+
 
     }
 

@@ -29,15 +29,12 @@ class HopfieldNetwork{
     MD::getMathematicalVertex<neurons_type>();
 
     Eigen::Matrix<matrix_type, Eigen::Dynamic, Eigen::Dynamic> W_ij;
-    std::vector<matrix_type> matrix_;
-    void trasformEigenInVector();
-    void trasformVectorInEigen();
 const matrix_type localField(const int index, const std::vector<neurons_type>& input);
 
     public:
 
     HopfieldNetwork() = default;
-     const std::vector<matrix_type>& getTraining();
+     const std::vector<matrix_type> getTraining();
      void setTraining(std::vector<matrix_type>& matrix);
 
 
