@@ -4,8 +4,8 @@
 #include "HopfieldNetwork.hpp"
 #include "CoherenceSetPattern.hpp"
 
+#include <mutex>
 #include <vector>
-
 
 #include "math/MathDimension.hpp"
 #include <cstdint>
@@ -23,7 +23,7 @@ template <typename neurons_type = int8_t, typename matrix_type = double>
   HN::HopfieldNetwork<neurons_type,matrix_type> hn_;
 
   bool isHopfieldGoing() const;
-  bool check_=true;
+  mutable std::recursive_mutex mtx_;
   
 public:
   HopfieldSimulator() = default;

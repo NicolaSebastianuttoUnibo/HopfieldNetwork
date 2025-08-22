@@ -22,7 +22,8 @@ template <typename neurons_type = int8_t, typename matrix_type = double>
 
 class HopfieldNetwork{
     private:
-   static constexpr std::array<neurons_type, static_cast<unsigned int>(std::pow(2,MD::getMathematicalDimension<neurons_type>()))> POINTS = MD::getMathematicalVertex<neurons_type>();
+    std::array<T,MD::getMathematicalNumberVertex<T>()>POINTS =
+    MD::getMathematicalVertex<T>();
     Eigen::Matrix<matrix_type, Eigen::Dynamic, Eigen::Dynamic> W_ij;
     std::vector<matrix_type> matrix_;
     void trasformEigenInVector();

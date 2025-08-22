@@ -46,15 +46,13 @@ void HS::HopfieldSimulator<neurons_type, matrix_type>::clear(const int index){
 template <typename neurons_type, typename matrix_type> 
 
 void HS::HopfieldSimulator<neurons_type,matrix_type>::corruptPattern(const size_t index, const float noise) {
+  std::lock_guard<std::recursive_mutex> lock(mtx_);
 
   
   if(isStateEvolving_[index]==true){return;}
-  if(!check_){return;}
 
-check_=false;
  
   patterns_[index]->reCorrupt(noise);
-check_=true;
 }
 
 ///emplace_pattern()
@@ -77,10 +75,9 @@ void HS::HopfieldSimulator<neurons_type, matrix_type>::emplace_pattern(const flo
 ///flipPixelOnPattern()
 template <typename neurons_type, typename matrix_type> 
 void HS::HopfieldSimulator<neurons_type,matrix_type>::flipPixelOnPattern(const size_t index, const size_t pos) {
-  if(!check_){return;}
- check_=false;
+   std::lock_guard<std::recursive_mutex> lock(mtx_);
+
  patterns_[index]->flipNoisyPixel(pos);
- check_=true;
 
 }
 ///generatePattern()
@@ -96,21 +93,19 @@ template <typename neurons_type, typename matrix_type>
 template <typename neurons_type, typename matrix_type> 
 void HS::HopfieldSimulator<neurons_type,matrix_type>::regrid(size_t numColumns, size_t numRows) {
 
-  if(!check_){return;}
+  std::lock_guard<std::recursive_mutex> lock(mtx_);
   if(isHopfieldGoing()){return;}
-  check_=false;
 
 for(auto &element : patterns_){
   element->regrid(numColumns,  numRows);
 }
-check_=true;
 }
 
 ///removePattern()
 template <typename neurons_type, typename matrix_type> 
 void HS::HopfieldSimulator<neurons_type,matrix_type>::removePattern(const size_t index) {
- if(!check_){return;}
- check_=false;
+  std::lock_guard<std::recursive_mutex> lock(mtx_);
+
 
   if (index < patterns_.size()) {
     patterns_.erase(patterns_.begin() + index);
@@ -120,21 +115,18 @@ void HS::HopfieldSimulator<neurons_type,matrix_type>::removePattern(const size_t
   throw std::runtime_error("The pattern you want to delete doesn't exist");
 
   }
-  check_=true;
 }
 
 
 ///resolvePattern()
 template <typename neurons_type, typename matrix_type> 
   void HS::HopfieldSimulator<neurons_type,matrix_type>::resolvePattern(const int index, float* status) {
- if(!check_){return;}
+  std::lock_guard<std::recursive_mutex> lock(mtx_);
   
     
     if(patterns_.size()==0){
 return;}
- check_=false;
      hn_.resolvePattern(*patterns_[index], status);
-    check_=true;
 }
 
 ///saveFileTraining()
@@ -191,23 +183,22 @@ return;}
   ///setTraining()
 template <typename neurons_type, typename matrix_type> 
   void HS::HopfieldSimulator<neurons_type,matrix_type>::setTraining(const int numColumns, const int numRows, std::vector<matrix_type>& matrix ){
- if(!check_){return;}
-    check_=false;
+  std::lock_guard<std::recursive_mutex> lock(mtx_);
+
 
     const int dim=std::sqrt(matrix.size());
     if(dim*dim!=matrix.size()){
        throw std::logic_error("Dimensione non compatibile");
     }
 hn_.setTraining(matrix);
-check_=true;
 regrid(numColumns,numRows);
   }
 
 ///trainNetworkHebb()
 template <typename neurons_type, typename matrix_type> 
   void HS::HopfieldSimulator<neurons_type,matrix_type>::trainNetworkHebb(float* status){
- if(!check_){return;}
- check_=false;    
+  std::lock_guard<std::recursive_mutex> lock(mtx_);
+   
 if(isHopfieldGoing()){return;}
     auto function = [](const std::unique_ptr<CSP::CoherenceSetPattern<neurons_type>>& csp_ptr){
        
@@ -216,7 +207,6 @@ if(isHopfieldGoing()){return;}
 
    hn_.trainNetworkWithHebb(patterns_, function,status);
 
-   check_=true;
 
 }
 
@@ -224,8 +214,8 @@ if(isHopfieldGoing()){return;}
 ///trainNetworkWithPseudoinverse()
 template <typename neurons_type, typename matrix_type> 
   void HS::HopfieldSimulator<neurons_type,matrix_type>::trainNetworkWithPseudoinverse(float* status){
- if(!check_){return;}
- check_=false;    
+  std::lock_guard<std::recursive_mutex> lock(mtx_);
+  
 if(isHopfieldGoing()){return;}
     auto function = [](const std::unique_ptr<CSP::CoherenceSetPattern<neurons_type>>& csp_ptr){
        
@@ -234,7 +224,6 @@ if(isHopfieldGoing()){return;}
 
    hn_.trainNetworkWithPseudoinverse(patterns_, function,status);
 
-   check_=true;
 
 }
 
