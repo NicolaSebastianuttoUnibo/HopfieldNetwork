@@ -1,19 +1,9 @@
 #include "NoisyPattern.hpp"
-#include <vector>
  #include <stdexcept> 
-#include <random>
-#include <cstdint>
-#include <cassert>
-#include <complex>
 #include <algorithm> 
 #include <iterator>
-//constructors
-template <typename T> 
-NP::NoisyPattern<T>::NoisyPattern(const std::vector<T> &sourcePattern, const float noise) : pattern_(sourcePattern)  {
- 
-  generateCorruptedPattern(noise);
-}
-
+//private functions
+//generateCorruptedPattern()
 template <typename T> 
 void NP::NoisyPattern<T>::generateCorruptedPattern(const float noise) {
 if (noise < 0.0f || noise > 1.0f) {
@@ -34,13 +24,23 @@ auto& generator = getRandomGenerator();
 
 }
 }
+///public functions
 
+//constructor
+template <typename T> 
+NP::NoisyPattern<T>::NoisyPattern(const std::vector<T> &sourcePattern, const float noise) : pattern_(sourcePattern)  {
+ 
+  generateCorruptedPattern(noise);
+}
+
+
+//getPattern()
 template <typename T> 
 const std::vector<T>& NP::NoisyPattern<T>::getPattern() const noexcept{
   return pattern_;
 }
 
-
+//flipPixel()
 template <typename T> 
 void NP::NoisyPattern<T>::flipPixel(const std::size_t pixelIndex) {
 if (pixelIndex>=pattern_.size()) {

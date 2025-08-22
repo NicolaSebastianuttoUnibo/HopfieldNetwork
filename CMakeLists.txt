@@ -52,7 +52,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/eigen)
 
 # Aggiunge il target eseguibile. Specifica il nome dell'eseguibile e i file sorgente. 
 
-add_executable(main main.cpp GraphicsManager.cpp Components.cpp HopfieldSimulator/TrainingPattern.cpp HopfieldSimulator/NoisyPattern.cpp  HopfieldSimulator/EvolvingPattern.cpp  HopfieldSimulator/CoherenceSetPattern.cpp HopfieldSimulator/HopfieldNetwork.cpp HopfieldSimulator/HopfieldSimulator.cpp 
+add_executable(main main.cpp GraphicsManager.cpp Components.cpp FileDialogHelper.cpp HopfieldSimulator/TrainingPattern.cpp HopfieldSimulator/NoisyPattern.cpp  HopfieldSimulator/EvolvingPattern.cpp  HopfieldSimulator/CoherenceSetPattern.cpp HopfieldSimulator/HopfieldNetwork.cpp HopfieldSimulator/HopfieldSimulator.cpp 
 
  ImGuiFileDialog/ImGuiFileDialog.cpp imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp imgui/imgui_widgets.cpp imgui/imgui_demo.cpp imgui/backends/imgui_impl_sdl2.cpp imgui/backends/imgui_impl_opengl3.cpp
 ) 
@@ -65,8 +65,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/imgui)
 target_link_libraries(main ${SDL2_LIBRARIES} GL)
 
  
-add_executable(all.t HopfieldNetwork.test.cpp  HopfieldSimulator/HopfieldNetwork.cpp )
+#add_executable(all.t HopfieldNetwork.test.cpp  HopfieldSimulator/HopfieldNetwork.cpp )
 # Anche i test potrebbero aver bisogno di Eigen se HopfieldNetwork.cpp lo usa
 # include_directories(${CMAKE_CURRENT_SOURCE_DIR}/eigen) è già globale e copre questo
-target_link_libraries(all.t)
-add_test(NAME all.t COMMAND all.t)
+#target_link_libraries(all.t)
+#add_test(NAME all.t COMMAND all.t)

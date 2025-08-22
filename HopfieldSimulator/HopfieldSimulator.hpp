@@ -1,10 +1,15 @@
 #ifndef HOPFIELD_SIMULATOR_HPP
 #define HOPFIELD_SIMULATOR_HPP
+
 #include "HopfieldNetwork.hpp"
 #include "CoherenceSetPattern.hpp"
+
 #include <vector>
 
 
+#include "math/MathDimension.hpp"
+#include <cstdint>
+#include <complex>
 
 namespace HS {
 
@@ -12,8 +17,7 @@ namespace HS {
 template <typename neurons_type = int8_t, typename matrix_type = double> 
   class HopfieldSimulator {
 
-  // std::vector<CSP::CoherenceSetPattern<neurons_type>> patterns_;
-    std::vector<std::unique_ptr<CSP::CoherenceSetPattern<neurons_type>>> patterns_; // NUOVO
+    std::vector<std::unique_ptr<CSP::CoherenceSetPattern<neurons_type>>> patterns_;
 
   std::vector<bool> isStateEvolving_;
   HN::HopfieldNetwork<neurons_type,matrix_type> hn_;
@@ -27,31 +31,30 @@ template <typename neurons_type = int8_t, typename matrix_type = double>
 public:
   HopfieldSimulator() = default;
   
-  // void push_back(CSP::CoherenceSetPattern<neurons_type>& pattern);
-  // template<typename... Args>
-  void emplace_pattern(std::string path, int a, int b);
+  const std::vector<std::unique_ptr<CSP::CoherenceSetPattern<neurons_type>>>& getPatterns() const;
 
-
-  void regrid(const size_t numColumns, const size_t numRows);
+  void clear(const int index);  
   void corruptPattern(const size_t index, const float noise=0.1f);
+  void emplace_pattern(const std::string& path, const int a, const int b);
+  void emplace_pattern(const float noise, const int a, const int b);
   void flipPixelOnPattern(const size_t index, const size_t pixelPos);
-  size_t size() const;
+  void generatePattern(const float noise, const std::size_t numColumns, const std::size_t numRows);
+  void regrid(const size_t numColumns, const size_t numRows);
   void removePattern(const size_t index);
-  // const std::vector<CSP::CoherenceSetPattern<neurons_type>>& getPatterns() const;
-  const std::vector<std::unique_ptr<CSP::CoherenceSetPattern<neurons_type>>>& getPatterns() const; // NUOVO
-
+  void resolvePattern(const int index, float* status);
+  void saveFileTraining(const std::string& str_buffer);
+  void setTraining(const int numColumns, const int numRows, std::vector<matrix_type>& matrix );
   void trainNetworkHebb(float* status=nullptr);
   void trainNetworkWithPseudoinverse(float* status=nullptr);
-  size_t size();
-  void setTraining(const int numColumns, const int numRows, std::vector<matrix_type>& matrix );
-void saveFileTraining(char* str_buffer);
- 
 
-void resolvePattern(const int index, float* status);
 
-void clear(const int index){
-  hn_.clearEnergy(*patterns_[index]);
-}
+
+
+
+  size_t size() const;
+
+  bool checkDimension();
+
 
 };
 

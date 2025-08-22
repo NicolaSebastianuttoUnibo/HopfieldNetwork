@@ -1,16 +1,15 @@
 #ifndef HOPFIELD_NETWORK_HPP
 #define HOPFIELD_NETWORK_HPP
-
-#include <Eigen/Dense>
-#include "math/Cast.hpp"
-#include "CoherenceSetPattern.hpp"
-
-#include "math/MathDimension.hpp"
-#include <cstdint>
-#include <complex>
-
 #include <vector> 
-
+#include <numeric> 
+#include <string> 
+#include <iostream> 
+#include "CoherenceSetPattern.hpp"
+#include "MathDimension.hpp"
+#include <Eigen/Dense>
+#include <complex>
+#include <cstdint>
+#include "cast.hpp"
 namespace CSP {
     template <typename T>
     class CoherenceSetPattern;
@@ -23,30 +22,34 @@ template <typename neurons_type = int8_t, typename matrix_type = double>
 class HopfieldNetwork{
     private:
    static constexpr std::array<neurons_type, static_cast<unsigned int>(std::pow(2,MD::getMathematicalDimension<neurons_type>()))> POINTS = MD::getMathematicalVertex<neurons_type>();
+
+
     Eigen::Matrix<matrix_type, Eigen::Dynamic, Eigen::Dynamic> W_ij;
     std::vector<matrix_type> matrix_;
     void trasformEigenInVector();
     void trasformVectorInEigen();
-const matrix_type localField(const int index, const std::vector<neurons_type>& input);
-
     public:
-
     HopfieldNetwork() = default;
+    void setTraining(std::vector<matrix_type>& matrix);
      const std::vector<matrix_type>& getTraining();
-     void setTraining(std::vector<matrix_type>& matrix);
 
 
-   float calculateEnergy(const std::vector<neurons_type>& input);
+    const std::vector<neurons_type> resolvePattern(const std::vector<neurons_type>& array);
+   
    void  clearEnergy(CSP::CoherenceSetPattern<neurons_type>& cps);
-    const std::vector<neurons_type> resolvePattern(const std::vector<neurons_type>& array) const;
+
+const matrix_type localField(const int index, const std::vector<neurons_type>& input);
+   
     void  resolvePattern(CSP::CoherenceSetPattern<neurons_type>& cps, float* status=nullptr);
 
+float calculateEnergy(const std::vector<neurons_type>& input);
 
 
 
 
-   template<typename Iterable, typename Extractor>
-void trainNetworkWithPseudoinverse(const Iterable& patterns, const Extractor extractor, float* status = nullptr);
+    ///...myclass
+//    template<typename Iterable, typename Extractor>
+// void trainNetworkWithPseudoinverse(const Iterable& patterns, const Extractor extractor, float* status = nullptr);
    template<typename Iterable, typename Extractor>
 void trainNetworkWithHebb(const Iterable& patterns, const Extractor extractor, float* status = nullptr);
    
@@ -57,38 +60,41 @@ void trainNetworkWithHebb(const Iterable& patterns, const Extractor extractor, f
 
 };// end class
 
-template <typename neurons_type, typename matrix_type>
 template<typename Iterable, typename Extractor>
+template <typename neurons_type, typename matrix_type>
 
 void HN::HopfieldNetwork<neurons_type, matrix_type>::trainNetworkWithHebb(const Iterable& patterns, const Extractor extractor, float* status) {
-   
+   /*
     if (patterns.empty()) {return;}
     const int numberNeurons = extractor(*patterns.begin()).size();
-    const matrix_type norm_factor = static_cast<matrix_type>(1.0) / static_cast<matrix_type>(numberNeurons);
+ const matrix_type norm_factor = static_cast<matrix_type>(1.0) / static_cast<matrix_type>(numberNeurons);
 
-   const int totalIteration=patterns.size();
-   int count=0;
+//  const int totalIteration=(numberNeurons+1)*numberNeurons*patterns.size()/2;
+ const int totalIteration=patterns.size();
+int count=0;
     
     W_ij = Eigen::Matrix<matrix_type, Eigen::Dynamic, Eigen::Dynamic>::Zero(numberNeurons, numberNeurons);
+// matrix_.assign(numberNeurons * numberNeurons, 0.0);
 
     for (const auto& pattern_container : patterns) {
         const auto& p_std = extractor(pattern_container);
-        Eigen::Matrix<matrix_type, Eigen::Dynamic, 1> p(numberNeurons); 
+        // const Eigen::VectorXd  p = Eigen::Map<const Eigen::VectorXd>(p_std.data(), p_std.size());
+
+ Eigen::Matrix<matrix_type, Eigen::Dynamic, 1> p(numberNeurons); 
         for (int k = 0; k < numberNeurons; ++k) {
             p[k] = custom_cast<matrix_type>(p_std[k]); 
         }
 
+
+        //trasposta coniugata
    W_ij += (p * p.adjoint()) * norm_factor;
+   W_ij.diagonal().setZero();
    if(status){
                 if(*status<0){
                   return;
                 }
                 count++;
             *status = static_cast<float>(count) / totalIteration;}
-
-    }///for patterns
-       W_ij.diagonal().setZero();
-
         // for (int i = 0; i < numberNeurons; ++i) {
         //     for (int j = i; j < numberNeurons; ++j) {
                 
@@ -112,11 +118,11 @@ void HN::HopfieldNetwork<neurons_type, matrix_type>::trainNetworkWithHebb(const 
 
 
 
-    
+    }*/
 }
 
 
-
+/*
 template <typename neurons_type, typename matrix_type>
 template <typename Iterable, typename Extractor>
 void HN::HopfieldNetwork<neurons_type, matrix_type>::trainNetworkWithPseudoinverse(const Iterable& patterns, const Extractor extractor, float* status) {
@@ -134,7 +140,11 @@ void HN::HopfieldNetwork<neurons_type, matrix_type>::trainNetworkWithPseudoinver
         p_idx++;
     }
 
+    
     Eigen::Matrix<matrix_type, Eigen::Dynamic, Eigen::Dynamic> C = X.adjoint() * X;
+
+
+    
     if (C.determinant() == matrix_type(0.0)) { 
         throw std::runtime_error("I pattern sono linearmente dipendenti, la matrice di correlazione non è invertibile.");
     }
@@ -165,9 +175,9 @@ if (status) {
 
     }
     
-    
+    if (status) *status = 1.0f;
 }
-
+*/
 
 
 template class HopfieldNetwork<int8_t,float>;

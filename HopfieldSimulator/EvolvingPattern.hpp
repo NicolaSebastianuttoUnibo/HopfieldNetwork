@@ -1,10 +1,11 @@
 #ifndef EVOLVING_PATTERN_HPP
 #define EVOLVING_PATTERN_HPP
+
 #include<vector>
+
+#include "math/MathDimension.hpp"
 #include <cstdint>
 #include <complex>
-
-
 
 namespace EP {
 
@@ -19,29 +20,16 @@ class EvolvingPattern {
 public:
   EvolvingPattern(const std::vector<T> &pattern);
   EvolvingPattern() = delete;
-  const std::vector<T>& getPattern() const {
-    return pattern_; 
-  }
-
-
-  std::vector<T>& getPattern() {
-    return pattern_; 
-  }
-  const std::vector<float>& getEnergy() const {
-    return energy_; 
-  }
-
-
-  std::vector<float>& getEnergy() {
-    return energy_; 
-  }
-void clearEnergy(){
-  energy_.clear();}
+  const std::vector<T>& getPattern() const;
+  std::vector<T>& getPattern();
+  const std::vector<float>& getEnergy() const;
+  std::vector<float>& getEnergy();
+void clearEnergy();
 
 
 };
 
-template class EvolvingPattern<int8_t>;
+template class EvolvingPattern<signed char>;
 template class EvolvingPattern<int>;
 template class EvolvingPattern<std::complex<int>>;
 template class EvolvingPattern<std::complex<int8_t>>;

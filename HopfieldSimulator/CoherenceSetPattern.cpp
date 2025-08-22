@@ -1,15 +1,81 @@
 
-#include "TrainingPattern.hpp"
-#include "NoisyPattern.hpp"
-#include "EvolvingPattern.hpp"
 #include "CoherenceSetPattern.hpp"
- #include <stdexcept> 
-#include <complex>
+#include <stdexcept> 
 
 
+///private function
+//getEvolvingPattern()
+template <typename T> 
+   EP::EvolvingPattern<T>& CSP::CoherenceSetPattern<T>::getEvolvingPattern()  noexcept{return ep_;}
+
+///public function
+//constructor
 template <typename T> 
     CSP::CoherenceSetPattern<T>::CoherenceSetPattern(const std::string &path, const std::size_t numColumns, const std::size_t numRows) : tp_(path, numColumns, numRows), np_(tp_.getPattern()), ep_(np_.getPattern()),cols_{numColumns}, rows_{numRows}  { }
 
+
+    // second constructor
+template <typename T> 
+    CSP::CoherenceSetPattern<T>::CoherenceSetPattern(const float noise, const std::size_t numColumns, const std::size_t numRows) : tp_(noise, numColumns, numRows), np_(tp_.getPattern()), ep_(np_.getPattern()),cols_{numColumns}, rows_{numRows}  { }
+
+    ///getTrainingPatternVector()
+template <typename T> 
+  const std::vector<T>& CSP::CoherenceSetPattern<T>::getTrainingPatternVector() const noexcept {
+return tp_.getPattern();
+  }
+  
+  ///getNoisyPatternVector()
+template <typename T> 
+  const std::vector<T>& CSP::CoherenceSetPattern<T>::getNoisyPatternVector() const noexcept{
+return np_.getPattern();
+  }
+///getEvolvingPatternVector()
+template <typename T> 
+  const std::vector<T>& CSP::CoherenceSetPattern<T>::getEvolvingPatternVector() const noexcept{
+return ep_.getPattern();
+  }
+
+
+  //getEnergy()
+  template <typename T> 
+  const std::vector<float>& CSP::CoherenceSetPattern<T>::getEnergy() const noexcept{
+return ep_.getEnergy();
+  }
+//getRow()
+template <typename T> 
+    const size_t& CSP::CoherenceSetPattern<T>::getRow() const noexcept{
+      return rows_;
+    }
+    ///getCol()
+template <typename T> 
+  const size_t& CSP::CoherenceSetPattern<T>::getCol() const noexcept{
+      return cols_;
+  }
+
+///hasSameDimensionOf()
+template <typename T> 
+  bool CSP::CoherenceSetPattern<T>::hasSameDimensionOf(CoherenceSetPattern& other){
+     return other.cols_==cols_&&other.rows_==rows_;
+   
+  }
+
+///flipNoisyPixel()
+template <typename T> 
+  void CSP::CoherenceSetPattern<T>::flipNoisyPixel(std::size_t pos){
+    np_.flipPixel(pos);
+    ep_.getPattern()=np_.getPattern();
+
+  }
+
+///reCorrupt()
+
+template <typename T> 
+  void CSP::CoherenceSetPattern<T>::reCorrupt(const float noise){
+np_=NP::NoisyPattern(tp_.getPattern(),noise);
+ep_.getPattern()=np_.getPattern();
+  }
+
+//regrid()
 template <typename T> 
   void CSP::CoherenceSetPattern<T>::regrid(const std::size_t numColumns, const std::size_t numRows){
     rows_=numRows;
@@ -18,18 +84,7 @@ template <typename T>
 reCorrupt();
   }
 
-template <typename T> 
-  void CSP::CoherenceSetPattern<T>::reCorrupt(const float noise){
-np_=NP::NoisyPattern(tp_.getPattern(),noise);
-ep_.getPattern()=np_.getPattern();
-  }
-
-template <typename T> 
-  void CSP::CoherenceSetPattern<T>::flipNoisyPixel(std::size_t pos){
-    np_.flipPixel(pos);
-    ep_.getPattern()=np_.getPattern();
-
-  }
+///updateEvolvingState()
 
 template <typename T> 
   void CSP::CoherenceSetPattern<T>::updateEvolvingState(const std::vector<T>& newPattern){
@@ -41,56 +96,16 @@ if(newPattern.size()!=ep_.getPattern().size()){
   }
   
   
-template <typename T> 
-  const TP::TrainingPattern<T>& CSP::CoherenceSetPattern<T>::getTrainingPattern() const noexcept {
-return tp_;
-  } 
-
-template <typename T> 
-  const NP::NoisyPattern<T>& CSP::CoherenceSetPattern<T>::getNoisyPattern() const noexcept{
-return np_;
-  }
-
-template <typename T> 
-  const EP::EvolvingPattern<T>& CSP::CoherenceSetPattern<T>::getEvolvingPattern() const noexcept{
-return ep_;
-  }
 
 
 
 
-template <typename T> 
-  const std::vector<T>& CSP::CoherenceSetPattern<T>::getTrainingPatternVector() const noexcept {
-return tp_.getPattern();
-  }
-  
-template <typename T> 
-  const std::vector<T>& CSP::CoherenceSetPattern<T>::getNoisyPatternVector() const noexcept{
-return np_.getPattern();
-  }
 
-template <typename T> 
-  const std::vector<T>& CSP::CoherenceSetPattern<T>::getEvolvingPatternVector() const noexcept{
-return ep_.getPattern();
-  }
 
-  template <typename T> 
-  const std::vector<float>& CSP::CoherenceSetPattern<T>::getEnergy() const noexcept{
-return ep_.getEnergy();
-  }
 
-template <typename T> 
-  bool CSP::CoherenceSetPattern<T>::hasSameDimensionOf(CoherenceSetPattern& other){
-     return other.cols_==cols_&&other.rows_==rows_;
-   
-  }
 
-template <typename T> 
-    const size_t& CSP::CoherenceSetPattern<T>::getRow() const noexcept{
-      return rows_;
-    }
-    
-template <typename T> 
-  const size_t& CSP::CoherenceSetPattern<T>::getCol() const noexcept{
-      return cols_;
-  }
+
+
+
+
+

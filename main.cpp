@@ -13,14 +13,19 @@
 #include <string>
 #include <complex>
 
+
 int main(int, char **) {
+    // using neurons_type = int8_t;
+    // using matrix_type = double;
+    using neurons_type = std::complex<int8_t>;
+    using matrix_type = std::complex<double>;
   try {
 
     /********************INIZIO ELENCO VARIABILI********************/
 
     GraphicsManager graphics; // gestisce le librerie grafiche di IMGUI e SDL
-    Comp<std::complex<int8_t>> comp; // permette di creare griglie, grafici in modo semplice
-     HS::HopfieldSimulator<std::complex<int8_t>, std::complex<double>>
+    Comp<neurons_type, matrix_type> comp; // permette di creare griglie, grafici in modo semplice
+    HS::HopfieldSimulator<neurons_type, matrix_type>
         hs;        // l'oggetto con cui possiamo personalizzare il nostro stato
     int pixel = 8; // i numeri di pixel che deve avere la classe
     int pixel_slider = 8; // i pixel indicati dallo slider
@@ -35,9 +40,9 @@ int main(int, char **) {
     bool showWindow = true;   // mi dice se mi mostra la schermata iniziale
     std::future<void> thread; // mi lancia in parallelo le operazioni complesse
     static char pathBuffer[256] =
-        "trainings/nomeDellaReteDiHopfield"; // nome di default per il
-//                                              // salvataggio dei file dei
-//                                              // trainings
+        "trainings/nomeRete"; // nome di default per il
+                                             // salvataggio dei file dei
+                                             // trainings
     float statusTrain =
         0.0f; // mi indica la percentuale di caricamento del training
     float statusEvolve =
@@ -54,10 +59,7 @@ int main(int, char **) {
     fdh.onSuccess = [&](const std::string &filePath) {
       hs.emplace_pattern(filePath, pixel,
           pixel);
-      CSP::CoherenceSetPattern<int8_t> cps(
-          filePath, pixel,
-          pixel);        // per ogni file crea la classe che gestisce un pattern
-      // hs.push_back(cps); // e lo inserisce nella classe che gestisce più pattern
+      
     };
     fdh.onDialogClose = [&] {
       showWindow = true;
@@ -72,10 +74,10 @@ int main(int, char **) {
       /// pesi
       int numRows = 0;
       int numColumns = 0;
-      std::vector<std::complex<double>> matrix;
+      std::vector<matrix_type> matrix;
 
       // funzione che mi restituisce i dati
-      // setElementsByFile(filePath, &numRows, &numColumns, &matrix);
+      comp.setElementsByFile(filePath, &numRows, &numColumns, &matrix);
       if (numRows != numColumns) {
         /// il main è costruito per essere quadrato
         throw std::runtime_error("Le dimensioni della matrice non valida: il "
@@ -83,7 +85,7 @@ int main(int, char **) {
       }
 
       pixel = numRows;                             // assegno il dato ottenuto
-      // hs.setTraining(numRows, numColumns, matrix); // assegno il training
+      hs.setTraining(numRows, numColumns, matrix); // assegno il training
       trained = true; // affermo che è stato trainato
     };
     fdh2.onDialogClose = [&] {
@@ -155,12 +157,20 @@ int main(int, char **) {
           }
           fdh.render();
         }
+        if (ImGui::Button("Generate Images")) {
+            hs.generatePattern(noise, pixel, pixel);
+            index=hs.size()>0?hs.size()-1:0;
+            
+          }
         ImGui::EndDisabled();
 
         ImGui::Separator();
         /***************inzio sezione training**********/
         /*pulsante per trainare la  rete*************/
+        ImGui::BeginDisabled(is_operation_in_progress);
         if (ImGui::Button(hebb?"Hebb":"Pseudoinverse")){hebb=!hebb;}
+        ImGui::EndDisabled();
+
         ImGui::SameLine();
         ImGui::BeginDisabled(is_operation_in_progress);
         {
@@ -181,10 +191,12 @@ int main(int, char **) {
         ImGui::SameLine();
 
         /*pulsante per salvare la rete**************************/
+        ImGui::BeginDisabled(is_operation_in_progress);
 
         if (ImGui::Button("Save Trained Network")) {
           ImGui::OpenPopup("Save Dialog");
         }
+        ImGui::EndDisabled();
 
         if (ImGui::BeginPopupModal("Save Dialog", NULL,
                                    ImGuiWindowFlags_AlwaysAutoResize)) {
@@ -198,8 +210,8 @@ int main(int, char **) {
           ImGui::Spacing();
 
           if (ImGui::Button("Save", ImVec2(120, 0))) {
-            hs.saveFileTraining(pathBuffer);
-            ImGui::CloseCurrentPopup();
+             hs.saveFileTraining(pathBuffer);
+             ImGui::CloseCurrentPopup();
           }
 
           ImGui::SetItemDefaultFocus();
@@ -262,7 +274,15 @@ int main(int, char **) {
             continue;
           }
 
-          ImGui::Separator();
+          /*check sulla dimensione*/
+          ImGui::BeginDisabled(is_operation_in_progress);
+          if (ImGui::Button("Verifica dimensioni")) {
+          trained=hs.checkDimension();
+          }
+            ImGui::EndDisabled();
+
+                    ImGui::Separator();
+
           /****************fine sezione avanti e indietro***********/
           /*****************inizio disegno dei tre pattern******************/
           /*pattern originale************/
@@ -288,7 +308,7 @@ int main(int, char **) {
 
           const auto &current_pattern_container = hs.getPatterns()[index];
           ImGui::Text("Pattern pixelato originale:");
-          const std::vector<std::complex<int8_t>> &training_data =
+          const std::vector<neurons_type> &training_data =
               current_pattern_container->getTrainingPatternVector();
           comp.drawGrid(training_data, pixel, pixel, "training_pattern");
           ImGui::EndGroup();
@@ -303,7 +323,7 @@ int main(int, char **) {
           ImGui::EndDisabled();
 
           ImGui::Text("Pattern pixelato corrotto:");
-          const std::vector<std::complex<int8_t>> &noisy_data =
+          const std::vector<neurons_type> &noisy_data =
               current_pattern_container->getNoisyPatternVector();
 
           comp.drawGrid(noisy_data, pixel, pixel, "noisy_pattern",
@@ -337,7 +357,7 @@ int main(int, char **) {
             statusEvolve = -1;
           }
           ImGui::Text("Pattern pixelato evoluzione:");
-          const std::vector<std::complex<int8_t>> &evolving_data =
+          const std::vector<neurons_type> &evolving_data =
               current_pattern_container->getEvolvingPatternVector();
 
           comp.drawGrid(evolving_data, pixel, pixel, "evolving_pattern");
@@ -354,8 +374,8 @@ int main(int, char **) {
 
           ImGui::EndGroup();
         }
-//         // /*****************fine disegno dei tre pattern+energia*************/
-//         // /***************FINE DELLA CREAZIONE DELLA FINESTRA******************/
+        // /*****************fine disegno dei tre pattern+energia*************/
+        // /***************FINE DELLA CREAZIONE DELLA FINESTRA******************/
 
         ImGui::End();
       }

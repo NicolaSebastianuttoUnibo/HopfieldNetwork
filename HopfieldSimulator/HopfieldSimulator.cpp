@@ -1,17 +1,16 @@
 #include "HopfieldSimulator.hpp"
-#include "TrainingPattern.hpp"
-#include "TrainingPattern.hpp"
-#include "NoisyPattern.hpp"
-#include "EvolvingPattern.hpp"
-#include <stdexcept>
-#include <cassert>
+
 #include <cmath>
 #include <filesystem>
 #include <fstream>
-#include <complex>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <iostream>
 
 
-
+//private function
+//isHopfieldGoing()
 
 template <typename neurons_type, typename matrix_type> 
  bool HS::HopfieldSimulator<neurons_type,matrix_type>::isHopfieldGoing() const{
@@ -21,67 +20,29 @@ for(const auto &element : isStateEvolving_){
 return false;
 }
 
-#include <utility> // Necessario per std::move e std::forward
-#include <memory>  // Necessario per std::make_unique
+//public function
+///getPatterns()
+
+template <typename neurons_type, typename matrix_type> 
+const std::vector<std::unique_ptr<CSP::CoherenceSetPattern<neurons_type>>>& HS::HopfieldSimulator<neurons_type,matrix_type>::getPatterns() const {
+
+  return patterns_;
+};
 
 
-namespace HS {
 
-// QUESTA È LA CORREZIONE PER emplace_pattern
-// NOTA: il 'template<typename... Args>' è posto *prima* del tipo di ritorno.
+
+
+
+//clear()
+
 template<typename neurons_type, typename matrix_type>
-// template<typename... Args> // <--- QUESTA RIGA È AL POSTO GIUSTO ORA
-void HopfieldSimulator<neurons_type, matrix_type>::emplace_pattern(std::string path, int a, int b) {
-    patterns_.emplace_back(std::make_unique<CSP::CoherenceSetPattern<neurons_type>>(path,  a,  b));
-  
-    isStateEvolving_.push_back(false);
 
-  }
+void HS::HopfieldSimulator<neurons_type, matrix_type>::clear(const int index){
+  hn_.clearEnergy(*patterns_[index]);
 }
 
-// template <typename neurons_type, typename matrix_type> 
-// void HS::HopfieldSimulator<neurons_type,matrix_type>::push_back(CSP::CoherenceSetPattern<neurons_type> &pattern) {
-//   if(!check_){return;}
-//   check_=false;
-
-//   if(patterns_.size()>0){
-//   if(!pattern.hasSameDimensionOf(**patterns_.begin())){return;}}
-//   rows_=pattern.getRow();
-//   cols_=pattern.getCol();
-//  *patterns_.push_back((std::move(pattern)));
-//  isStateEvolving_.push_back(false);
-//  check_=true;
-// }
-
-
-
-template <typename neurons_type, typename matrix_type> 
- size_t HS::HopfieldSimulator<neurons_type,matrix_type>::size() const{
-  return patterns_.size();
-}
-
-template <typename neurons_type, typename matrix_type> 
-void HS::HopfieldSimulator<neurons_type,matrix_type>::regrid(size_t numColumns, size_t numRows) {
-
-  if(!check_){return;}
-  if(isHopfieldGoing()){return;}
-  check_=false;
-   cols_=numColumns;
-   rows_=numRows;
-  //  std::cout<<cols_<<"\n";
-  //  std::cout<<rows_<<"\n";
-  //     std::cout<<hn_.getTraining().size()<<"\n";
-  //     std::cout<<"______"<<"\n";
-
- 
-for(auto &element : patterns_){
-  element->regrid(numColumns,  numRows);
-}
-
-
-check_=true;
-}
-
+//corruptPattern()
 template <typename neurons_type, typename matrix_type> 
 
 void HS::HopfieldSimulator<neurons_type,matrix_type>::corruptPattern(const size_t index, const float noise) {
@@ -96,6 +57,26 @@ check_=false;
 check_=true;
 }
 
+///emplace_pattern()
+template<typename neurons_type, typename matrix_type>
+void HS::HopfieldSimulator<neurons_type, matrix_type>::emplace_pattern(const std::string& path, const int a, const int b) {
+    patterns_.emplace_back(std::make_unique<CSP::CoherenceSetPattern<neurons_type>>(path,  a,  b));
+  
+    isStateEvolving_.push_back(false);
+cols_=a;rows_=b;
+  }
+  
+template<typename neurons_type, typename matrix_type>
+void HS::HopfieldSimulator<neurons_type, matrix_type>::emplace_pattern(const float noise, const int a, const int b) {
+    patterns_.emplace_back(std::make_unique<CSP::CoherenceSetPattern<neurons_type>>(noise,  a,  b));
+  
+    isStateEvolving_.push_back(false);
+cols_=a;rows_=b;
+  }
+
+
+
+///flipPixelOnPattern()
 template <typename neurons_type, typename matrix_type> 
 void HS::HopfieldSimulator<neurons_type,matrix_type>::flipPixelOnPattern(const size_t index, const size_t pos) {
   if(!check_){return;}
@@ -104,15 +85,32 @@ void HS::HopfieldSimulator<neurons_type,matrix_type>::flipPixelOnPattern(const s
  check_=true;
 
 }
-
-
+///generatePattern()
 template <typename neurons_type, typename matrix_type> 
-const std::vector<std::unique_ptr<CSP::CoherenceSetPattern<neurons_type>>>& HS::HopfieldSimulator<neurons_type,matrix_type>::getPatterns() const {
 
-  return patterns_;
-};
+  void HS::HopfieldSimulator<neurons_type,matrix_type>::generatePattern(const float noise, const std::size_t numColumns, const std::size_t numRows){
+       patterns_.emplace_back(std::make_unique<CSP::CoherenceSetPattern<neurons_type>>(noise,  numColumns,  numRows));
+  
+    isStateEvolving_.push_back(false);
+cols_=numColumns;rows_=numRows;
+  }
 
+///regrid()
+template <typename neurons_type, typename matrix_type> 
+void HS::HopfieldSimulator<neurons_type,matrix_type>::regrid(size_t numColumns, size_t numRows) {
 
+  if(!check_){return;}
+  if(isHopfieldGoing()){return;}
+  check_=false;
+   cols_=numColumns;
+   rows_=numRows;
+for(auto &element : patterns_){
+  element->regrid(numColumns,  numRows);
+}
+check_=true;
+}
+
+///removePattern()
 template <typename neurons_type, typename matrix_type> 
 void HS::HopfieldSimulator<neurons_type,matrix_type>::removePattern(const size_t index) {
  if(!check_){return;}
@@ -130,81 +128,23 @@ void HS::HopfieldSimulator<neurons_type,matrix_type>::removePattern(const size_t
 }
 
 
-template <typename neurons_type, typename matrix_type> 
-  void HS::HopfieldSimulator<neurons_type,matrix_type>::trainNetworkHebb(float* status){
- if(!check_){return;}
- check_=false;    
-if(isHopfieldGoing()){return;}
-    auto function = [](const std::unique_ptr<CSP::CoherenceSetPattern<neurons_type>>& csp_ptr){
-       
-        return csp_ptr->getTrainingPattern().getPattern();
-    };
-
-   hn_.trainNetworkHebb(patterns_, function,status);
-
-   check_=true;
-
-}
-
-template <typename neurons_type, typename matrix_type> 
-  void HS::HopfieldSimulator<neurons_type,matrix_type>::trainNetworkWithPseudoinverse(float* status){
- if(!check_){return;}
- check_=false;    
-if(isHopfieldGoing()){return;}
-    auto function = [](const std::unique_ptr<CSP::CoherenceSetPattern<neurons_type>>& csp_ptr){
-       
-        return csp_ptr->getTrainingPattern().getPattern();
-    };
-
-   hn_.trainNetworkWithPseudoinverse(patterns_, function,status);
-
-   check_=true;
-
-}
-
-
-
-
-
-
+///resolvePattern()
 template <typename neurons_type, typename matrix_type> 
   void HS::HopfieldSimulator<neurons_type,matrix_type>::resolvePattern(const int index, float* status) {
  if(!check_){return;}
   
-    // std::cout<<"here\n";
     
-    if(patterns_.size()==0){    //std::cout<<"here2\n";
-return;}//std::cout<<"here3\n";
-    const int dim = (*(patterns_[0])).getTrainingPatternVector().size();
-    if(!check_||hn_.getTraining().size()!=dim*dim){std::cout<<"here4\n";return;}
+    if(patterns_.size()==0){
+return;}
  check_=false;
-// std::cout<<"here5\n";
      hn_.resolvePattern(*patterns_[index], status);
     check_=true;
 }
 
-  
-
-template <typename neurons_type, typename matrix_type> 
-size_t HS::HopfieldSimulator<neurons_type,matrix_type>::size(){
-return patterns_.size();
-}
-  
-template <typename neurons_type, typename matrix_type> 
-  void HS::HopfieldSimulator<neurons_type,matrix_type>::setTraining(const int numColumns, const int numRows, std::vector<matrix_type>& matrix ){
- if(!check_){return;}
-    check_=false;
-cols_=numColumns;
-rows_=numRows;
-    const int dim=std::sqrt(matrix.size());
-    assert(dim*dim==matrix.size());
-hn_.setTraining(matrix);
-check_=true;
-regrid(numColumns,numRows);
-  }
+///saveFileTraining()
 
 template<typename neurons_type, typename matrix_type>
-void HS::HopfieldSimulator<neurons_type, matrix_type>::saveFileTraining(char* str_buffer) {
+void HS::HopfieldSimulator<neurons_type, matrix_type>::saveFileTraining(const std::string& str_buffer) {
     
     const int numColumns = cols_;
     const int numRows = rows_;
@@ -214,7 +154,7 @@ void HS::HopfieldSimulator<neurons_type, matrix_type>::saveFileTraining(char* st
     try {
 
       std::filesystem::path filePath(str_buffer);
-      filePath.replace_extension(".training"); 
+      filePath.replace_extension(".training");
       std::filesystem::path directoryPath = filePath.parent_path();
 
         if (!directoryPath.empty() && !std::filesystem::exists(directoryPath)) {
@@ -248,4 +188,69 @@ void HS::HopfieldSimulator<neurons_type, matrix_type>::saveFileTraining(char* st
     catch (const std::exception& e) {
         throw;
     }
+}
+
+  ///setTraining()
+template <typename neurons_type, typename matrix_type> 
+  void HS::HopfieldSimulator<neurons_type,matrix_type>::setTraining(const int numColumns, const int numRows, std::vector<matrix_type>& matrix ){
+ if(!check_){return;}
+    check_=false;
+cols_=numColumns;
+rows_=numRows;
+    const int dim=std::sqrt(matrix.size());
+    if(dim*dim!=matrix.size()){
+       throw std::logic_error("Dimensione non compatibile");
+    }
+hn_.setTraining(matrix);
+check_=true;
+regrid(numColumns,numRows);
+  }
+
+///trainNetworkHebb()
+template <typename neurons_type, typename matrix_type> 
+  void HS::HopfieldSimulator<neurons_type,matrix_type>::trainNetworkHebb(float* status){
+ if(!check_){return;}
+ check_=false;    
+if(isHopfieldGoing()){return;}
+    auto function = [](const std::unique_ptr<CSP::CoherenceSetPattern<neurons_type>>& csp_ptr){
+       
+        return csp_ptr->getTrainingPatternVector();
+    };
+
+   hn_.trainNetworkWithHebb(patterns_, function,status);
+
+   check_=true;
+
+}
+
+
+///trainNetworkWithPseudoinverse()
+template <typename neurons_type, typename matrix_type> 
+  void HS::HopfieldSimulator<neurons_type,matrix_type>::trainNetworkWithPseudoinverse(float* status){
+ if(!check_){return;}
+ check_=false;    
+if(isHopfieldGoing()){return;}
+    auto function = [](const std::unique_ptr<CSP::CoherenceSetPattern<neurons_type>>& csp_ptr){
+       
+        return csp_ptr->getTrainingPatternVector();
+    };
+
+   hn_.trainNetworkWithPseudoinverse(patterns_, function,status);
+
+   check_=true;
+
+}
+
+
+///size()
+template <typename neurons_type, typename matrix_type> 
+ size_t HS::HopfieldSimulator<neurons_type,matrix_type>::size() const{
+  return patterns_.size();
+}
+
+///checkDimension()
+
+template <typename neurons_type, typename matrix_type> 
+ bool HS::HopfieldSimulator<neurons_type,matrix_type>::checkDimension() {
+  return rows_*cols_*rows_*cols_==hn_.getTraining().size();
 }

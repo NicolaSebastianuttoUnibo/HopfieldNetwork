@@ -2,53 +2,29 @@
 #define STB_IMAGE_IMPLEMENTATION
 
 #include "TrainingPattern.hpp"
-
 #include "../stb/stb_image.h"
 
-#include <numeric>
 #include <stdexcept>
-#include <string>
-#include <vector>
-#include <array>
-#include <cstdint>
-#include <cmath>
+#include <algorithm>
 
-
-
+///StbiImageDeleter
 void TP::StbiImageDeleter::operator()(unsigned char* data) const {
     if (data) {
         stbi_image_free(data);
     }
 }
 
-//costruttore
-template <typename T> 
-TP::TrainingPattern<T>::TrainingPattern(const std::string &path, const std::size_t numColumns, const std::size_t numRows) : path_{path} {
-  
-   unsigned char* rawData = stbi_load(
-        path.c_str(), &imgWidth_, &imgHeight_, &imgChannels_, 0
-    );
-if (rawData == nullptr) {
-        throw std::runtime_error("Failed to load image from: " + path);
-    }
-
-   imageData_.reset(rawData);
-       calculateIntegralImage();
-
-         regrid(numColumns, numRows);
- 
-
-}
-
+///private function of TrainingPattern
+//calculateIntegralImage()
 template <typename T>
 void TP::TrainingPattern<T>::calculateIntegralImage() {
     const std::size_t integral_width = imgWidth_ + 1;
     const std::size_t integral_height = imgHeight_ + 1;
-    integralImage_.assign(integral_width * integral_height, 0);
+    imgIntegral_.assign(integral_width * integral_height, 0);
 
     for (int y = 0; y < imgHeight_; ++y) {
         for (int x = 0; x < imgWidth_; ++x) {
-            unsigned char* pixel = imageData_.get() + (y * imgWidth_ + x) * imgChannels_;
+            unsigned char* pixel = imgData_.get() + (y * imgWidth_ + x) * imgChannels_;
             
             int luminance = 0;
             if (imgChannels_ >= 3) { 
@@ -58,40 +34,94 @@ void TP::TrainingPattern<T>::calculateIntegralImage() {
             }
 
             
-            integralImage_[(y + 1) * integral_width + (x + 1)] = 
+            imgIntegral_[(y + 1) * integral_width + (x + 1)] = 
                 luminance + 
-                integralImage_[y * integral_width + (x + 1)] + 
-                integralImage_[(y + 1) * integral_width + x] - 
-                integralImage_[y * integral_width + x];
+                imgIntegral_[y * integral_width + (x + 1)] + 
+                imgIntegral_[(y + 1) * integral_width + x] - 
+                imgIntegral_[y * integral_width + x];
         }
     }
 }
 
 
+//generateRandomPattern()
+template <typename T>
+  void TP::TrainingPattern<T>::generateRandomPattern(const float noise, const std::size_t numColumns, const std::size_t numRows){
 
+    if (noise < 0.0f || noise > 1.0f) {
+        throw std::invalid_argument("The noise must be in the interval [0.0 , 1.0]");
+    }
+const size_t N=numColumns*numRows;
+    pattern_.clear();
+pattern_.reserve(N);
+std::uniform_real_distribution<float> real(0.0f, 1.0f);
+std::uniform_int_distribution<int> integer(0, static_cast<int>(POINTS.size() - 1));
+auto& generator = getRandomGenerator();
+
+     for (size_t i=0;i<N;i++) {
+             int random_index = integer(generator);
+             pattern_.push_back( POINTS[random_index]);
+     
+
+
+}
+  }
+
+
+///public function of TrainingPattern
+
+//constructor
+template <typename T> 
+TP::TrainingPattern<T>::TrainingPattern(const std::string &path, const std::size_t numColumns, const std::size_t numRows) {
+  
+   unsigned char* rawData = stbi_load(
+        path.c_str(), &imgWidth_, &imgHeight_, &imgChannels_, 0
+    );
+if (rawData == nullptr) {
+        throw std::runtime_error("Failed to load image from: " + path);
+    }
+
+   imgData_.reset(rawData);
+       calculateIntegralImage();
+
+         regrid(numColumns, numRows);
+ 
+
+}
+
+///second constructor
+template <typename T> 
+
+  TP::TrainingPattern<T>::TrainingPattern(const float noise, const std::size_t numColumns, const std::size_t numRows) : noise_{noise}{
+generateRandomPattern(noise, numColumns, numRows);
+  }
+
+
+
+
+///getPattern()
 template <typename T> 
 const std::vector<T> &TP::TrainingPattern<T>::getPattern() const{
   return pattern_;
 }
 
-
+///regrid()
 template <typename T> 
 void TP::TrainingPattern<T>::regrid(const std::size_t numColumns, const std::size_t numRows) {
 
     if (numColumns == 0 || numRows == 0) {
         throw std::invalid_argument("Number of columns and rows must be positive.");
     }
-    if (!imageData_) {
-        throw std::runtime_error("Image data is not loaded, cannot regrid.");
+    if (!imgData_) {
+      generateRandomPattern(noise_, numColumns, numRows);
+return;
     }
 
 
 
   
-  const float maxLum = 256.0f;
-  const float threshold = 128.0f;
-  
-    const std::size_t integral_width = imgWidth_ + 1;
+  const float maxLum = 256.0f;  
+   const std::size_t integral_width = imgWidth_ + 1;
 
    
     pattern_.clear();
@@ -107,14 +137,14 @@ void TP::TrainingPattern<T>::regrid(const std::size_t numColumns, const std::siz
        int end_x = static_cast<int>((c + 1) * cell_width);
        int end_y = static_cast<int>((r + 1) * cell_height);
 
-      //per evitare che nel conteggio si esca dall'immagine
+      //to prevent going out of bounds of the image during counting
       end_x = std::min(end_x, imgWidth_);
       end_y = std::min(end_y, imgHeight_);
 
-            long long C1 = integralImage_[start_y * integral_width + start_x];
-            long long C2 = integralImage_[start_y * integral_width + end_x];   
-            long long C3 = integralImage_[end_y * integral_width + start_x];        
-            long long C4 = integralImage_[end_y * integral_width + end_x];   
+            long long C1 = imgIntegral_[start_y * integral_width + start_x];
+            long long C2 = imgIntegral_[start_y * integral_width + end_x];   
+            long long C3 = imgIntegral_[end_y * integral_width + start_x];        
+            long long C4 = imgIntegral_[end_y * integral_width + end_x];   
             long long total_luminance = C4 - C2 - C3 + C1;
             int pixel_count = (end_x - start_x) * (end_y - start_y);
 
@@ -131,11 +161,7 @@ for(int i=0;i<N;i++){
     pattern_.push_back(POINTS[i]);
   }
 }
-      // if (average_luminance > threshold) {
-      //   pattern_.push_back(+1); // Chiaro
-      // } else {
-      //   pattern_.push_back(-1); // Scuro
-      // }
+      
     }
   }
 

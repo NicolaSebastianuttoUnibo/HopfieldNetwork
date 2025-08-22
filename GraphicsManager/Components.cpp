@@ -1,12 +1,12 @@
 #include "GraphicsManager.hpp"
+#include <filesystem>
+#include <fstream>
+#include <map>
 
-#include "ImGuiFileDialog/ImGuiFileDialog.h"
-#include "imgui/backends/imgui_impl_opengl3.h"
-#include "imgui/backends/imgui_impl_sdl2.h"
 #include "imgui/imgui.h"
-#include <iostream>
-template <typename T>
-void Comp<T>::drawGrid(const std::vector<T> &data, int cols, int rows,
+
+template <typename T, typename M>
+void Comp<T,M>::drawGrid(const std::vector<T> &data, int cols, int rows,
                        const char *id_grid,
                        const std::function<void(int)> &function, float size) {
   ImGui::PushID(id_grid);
@@ -28,10 +28,6 @@ void Comp<T>::drawGrid(const std::vector<T> &data, int cols, int rows,
 
   const float cell_size_x = canvas_sz.x / cols;
   const float cell_size_y = canvas_sz.y / rows;
-
-
-  const ImU32 COLOR_BLACK = IM_COL32(50, 50, 50, 255);
-  const ImU32 COLOR_WHITE = IM_COL32(255, 255, 255, 255);
 
 
 
@@ -88,8 +84,8 @@ const ImU32 COLOR_BLACK = IM_COL32(color, color, color, 255);
 
   ImGui::PopID();
 }
-
-template <typename T> void Comp<T>::drawPlot(const std::vector<float> &array) {
+template <typename T, typename M>
+ void Comp<T,M>::drawPlot(const std::vector<float> &array) {
 
   // Se non ci sono dati, mostra un messaggio
   if (array.size() == 0) {
@@ -122,4 +118,46 @@ template <typename T> void Comp<T>::drawPlot(const std::vector<float> &array) {
     ImGui::PlotLines(graph_label, values, array.size(), 0, NULL, min_val,
                      max_val, ImVec2(300, 300));
   }
+}
+
+
+template <typename T,typename M>
+void Comp<T,M>::setElementsByFile(const std::string &filePath, int *a, int *b,
+                       std::vector<M> *m) {
+
+  std::filesystem::path filePath2(filePath);
+
+  if (!std::filesystem::exists(filePath)) {
+    throw std::runtime_error("File di training non trovato: " +
+                             filePath2.string());
+  }
+  std::ifstream inFile(filePath);
+  if (!inFile.is_open()) {
+    throw std::runtime_error("Impossibile aprire il file per la lettura: " +
+                             filePath2.string());
+  }
+
+  int numRows, numColumns;
+
+  if (!(inFile >> numRows >> numColumns)) {
+    throw std::runtime_error(
+        "Formato file non valido: impossibile leggere le dimensioni da " +
+        filePath2.string());
+  }
+
+  std::vector<M> matrix;
+  M  element;
+
+  while (inFile >> element) {
+    matrix.push_back(element);
+  }
+  if (!inFile.eof() && inFile.fail()) {
+
+    throw std::runtime_error("Errore: il file contiene dati non validi o in un formato non corretto.");
+}
+
+  inFile.close();
+  *a = numRows;
+  *b = numColumns;
+  *m = matrix;
 }

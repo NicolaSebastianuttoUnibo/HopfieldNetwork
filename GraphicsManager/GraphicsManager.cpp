@@ -1,11 +1,9 @@
 #include "GraphicsManager.hpp"
 
-// Includi le implementazioni complete solo nel file .cpp
 #include "ImGuiFileDialog/ImGuiFileDialog.h"
 #include "imgui/backends/imgui_impl_opengl3.h"
 #include "imgui/backends/imgui_impl_sdl2.h"
 #include "imgui/imgui.h"
-
 #include <SDL.h>
 #include <SDL_opengl.h>
 

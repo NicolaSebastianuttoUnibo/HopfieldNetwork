@@ -24,17 +24,21 @@ struct MathematicalDimension<std::complex<T>> {
     };
 };
 
-// Helper function to get the mathematical dimension value
 template <typename T>
 constexpr int getMathematicalDimension() {
     return MathematicalDimension<T>::dim;
 }
 
-// Helper function to get the mathematical vertices
 template <typename T>
 constexpr auto getMathematicalVertex() {
     return MathematicalDimension<T>::points;
 }
+
+template <typename T>
+constexpr auto getMathematicalNumberVertex() {
+    return MathematicalDimension<T>::points.size();
+}
+
 
 }
 
