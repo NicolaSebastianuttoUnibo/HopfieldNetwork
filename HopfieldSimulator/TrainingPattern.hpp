@@ -39,15 +39,15 @@ private:
     int imgHeight_ = 0;
     int imgChannels_ = 0;
     std::vector<long long> imgIntegral_; 
-    float noise_;
-  void generateRandomPattern(const float noise, const std::size_t numColumns, const std::size_t numRows);
+    float randomDensity_;
+  void generateRandomPattern(const float randomDensity, const std::size_t numColumns, const std::size_t numRows);
     void calculateIntegralImage();
 
 public:
   TrainingPattern(const std::string& path, const std::size_t numColumns, const std::size_t numRows);
-  TrainingPattern(const float noise, const std::size_t numColumns, const std::size_t numRows);
+  TrainingPattern(const float randomDensity, const std::size_t numColumns, const std::size_t numRows);
   TrainingPattern() = delete;
-  const std::vector<T> &getPattern() const;
+  const std::vector<T> &getPattern() const noexcept;
   void regrid(const std::size_t numColumns, const std::size_t numRows);
 };
 

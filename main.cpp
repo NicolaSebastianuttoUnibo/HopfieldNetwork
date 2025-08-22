@@ -4,6 +4,7 @@
 #include "HopfieldSimulator/HopfieldNetwork.hpp"
 #include "HopfieldSimulator/HopfieldSimulator.hpp"
 #include "ImGuiFileDialog/ImGuiFileDialog.h"
+#include <atomic>
 #include <chrono>
 #include <functional>
 #include <future>
@@ -43,11 +44,11 @@ int main(int, char **) {
         "trainings/nomeRete"; // nome di default per il
                                              // salvataggio dei file dei
                                              // trainings
-    float statusTrain =
+    std::atomic<float>   statusTrain =
         0.0f; // mi indica la percentuale di caricamento del training
-    float statusEvolve =
+    std::atomic<float>   statusEvolve =
         0.0f; // mi indica la percentuale di caricamento dell'evolve
-    std::vector<float *> kill = {
+    std::vector<std::atomic<float> *> kill = {
         &statusTrain, &statusEvolve}; // puntatori agli stati in modo tal
     // e che il programma è in grado di accederli, e interrompere processi
     // costosi

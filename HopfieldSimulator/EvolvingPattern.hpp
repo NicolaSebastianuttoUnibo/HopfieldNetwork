@@ -20,11 +20,11 @@ class EvolvingPattern {
 public:
   EvolvingPattern(const std::vector<T> &pattern);
   EvolvingPattern() = delete;
-  const std::vector<T>& getPattern() const;
-  std::vector<T>& getPattern();
-  const std::vector<float>& getEnergy() const;
-  std::vector<float>& getEnergy();
-void clearEnergy();
+  const std::vector<T>& getPattern() const noexcept;
+  std::vector<T>& getPattern() noexcept;
+  const std::vector<float>& getEnergy() const noexcept;
+  std::vector<float>& getEnergy() noexcept;
+void clearEnergy() noexcept;
 
 
 };

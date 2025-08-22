@@ -63,7 +63,7 @@ void GraphicsManager::initialize() {
 }
 // ... (costruttore, distruttore, initialize, shutdown rimangono uguali)
 
-bool GraphicsManager::beginFrame(std::vector<float *> kill) {
+bool GraphicsManager::beginFrame(std::vector<std::atomic<float> *> kill) {
   if (!isInitialized_) {
     return false; // Non può iniziare un frame se non inizializzato
   }

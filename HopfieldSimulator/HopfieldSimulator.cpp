@@ -13,7 +13,7 @@
 ///getPatterns()
 
 template <typename neurons_type, typename matrix_type> 
-const std::vector<std::unique_ptr<CSP::CoherenceSetPattern<neurons_type>>>& HS::HopfieldSimulator<neurons_type,matrix_type>::getPatterns() const {
+const std::vector<std::unique_ptr<CSP::CoherenceSetPattern<neurons_type>>>& HS::HopfieldSimulator<neurons_type,matrix_type>::getPatterns() const noexcept{
 
   return patterns_;
 };
@@ -100,7 +100,7 @@ void HS::HopfieldSimulator<neurons_type,matrix_type>::removePattern(const size_t
 
 ///resolvePattern()
 template <typename neurons_type, typename matrix_type> 
-  void HS::HopfieldSimulator<neurons_type,matrix_type>::resolvePattern(const int index, float* status) {
+  void HS::HopfieldSimulator<neurons_type,matrix_type>::resolvePattern(const int index, std::atomic<float>* status) {
   std::lock_guard<std::recursive_mutex> lock(mtx_);
   
     
@@ -176,7 +176,7 @@ regrid(numColumns,numRows);
 
 ///trainNetworkHebb()
 template <typename neurons_type, typename matrix_type> 
-  void HS::HopfieldSimulator<neurons_type,matrix_type>::trainNetworkHebb(float* status){
+  void HS::HopfieldSimulator<neurons_type,matrix_type>::trainNetworkHebb(std::atomic<float>* status){
   std::lock_guard<std::recursive_mutex> lock(mtx_);
    
     auto function = [](const std::unique_ptr<CSP::CoherenceSetPattern<neurons_type>>& csp_ptr){
@@ -192,7 +192,7 @@ template <typename neurons_type, typename matrix_type>
 
 ///trainNetworkWithPseudoinverse()
 template <typename neurons_type, typename matrix_type> 
-  void HS::HopfieldSimulator<neurons_type,matrix_type>::trainNetworkWithPseudoinverse(float* status){
+  void HS::HopfieldSimulator<neurons_type,matrix_type>::trainNetworkWithPseudoinverse(std::atomic<float>* status){
   std::lock_guard<std::recursive_mutex> lock(mtx_);
   
     auto function = [](const std::unique_ptr<CSP::CoherenceSetPattern<neurons_type>>& csp_ptr){
@@ -208,14 +208,14 @@ template <typename neurons_type, typename matrix_type>
 
 ///size()
 template <typename neurons_type, typename matrix_type> 
- size_t HS::HopfieldSimulator<neurons_type,matrix_type>::size() const{
+ size_t HS::HopfieldSimulator<neurons_type,matrix_type>::size() const noexcept{
   return patterns_.size();
 }
 
 ///checkDimension()
 
 template <typename neurons_type, typename matrix_type> 
- bool HS::HopfieldSimulator<neurons_type,matrix_type>::checkDimension() {
+ bool HS::HopfieldSimulator<neurons_type,matrix_type>::checkDimension() noexcept {
   if(patterns_.size()==0){
 return false;}
     const size_t cols = patterns_[0]->getCol();

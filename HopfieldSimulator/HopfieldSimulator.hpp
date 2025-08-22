@@ -4,6 +4,7 @@
 #include "HopfieldNetwork.hpp"
 #include "CoherenceSetPattern.hpp"
 
+#include <atomic>
 #include <mutex>
 #include <vector>
 
@@ -24,7 +25,7 @@ template <typename neurons_type = int8_t, typename matrix_type = double>
 public:
   HopfieldSimulator() = default;
   
-  const std::vector<std::unique_ptr<CSP::CoherenceSetPattern<neurons_type>>>& getPatterns() const;
+  const std::vector<std::unique_ptr<CSP::CoherenceSetPattern<neurons_type>>>& getPatterns() const noexcept;
 
   void clear(const int index);  
   void corruptPattern(const size_t index, const float noise=0.1f);
@@ -34,19 +35,19 @@ public:
   void generatePattern(const float noise, const std::size_t numColumns, const std::size_t numRows);
   void regrid(const size_t numColumns, const size_t numRows);
   void removePattern(const size_t index);
-  void resolvePattern(const int index, float* status);
+  void resolvePattern(const int index,  std::atomic<float>* status);
   void saveFileTraining(const std::string& str_buffer);
   void setTraining(const int numColumns, const int numRows, std::vector<matrix_type>& matrix );
-  void trainNetworkHebb(float* status=nullptr);
-  void trainNetworkWithPseudoinverse(float* status=nullptr);
+  void trainNetworkHebb( std::atomic<float>* status=nullptr);
+  void trainNetworkWithPseudoinverse( std::atomic<float>* status=nullptr);
 
 
 
 
 
-  size_t size() const;
+  size_t size() const noexcept;
 
-  bool checkDimension();
+  bool checkDimension() noexcept;
 
 
 };

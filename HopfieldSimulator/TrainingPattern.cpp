@@ -46,10 +46,10 @@ void TP::TrainingPattern<T>::calculateIntegralImage() {
 
 //generateRandomPattern()
 template <typename T>
-  void TP::TrainingPattern<T>::generateRandomPattern(const float noise, const std::size_t numColumns, const std::size_t numRows){
+  void TP::TrainingPattern<T>::generateRandomPattern(const float randomDensity, const std::size_t numColumns, const std::size_t numRows){
 
-    if (noise < 0.0f || noise > 1.0f) {
-        throw std::invalid_argument("The noise must be in the interval [0.0 , 1.0]");
+    if (randomDensity < 0.0f || randomDensity > 1.0f) {
+        throw std::invalid_argument("The random density must be in the interval [0.0 , 1.0]");
     }
 const size_t N=numColumns*numRows;
     pattern_.clear();
@@ -92,8 +92,8 @@ if (rawData == nullptr) {
 ///second constructor
 template <typename T> 
 
-  TP::TrainingPattern<T>::TrainingPattern(const float noise, const std::size_t numColumns, const std::size_t numRows) : noise_{noise}{
-generateRandomPattern(noise, numColumns, numRows);
+  TP::TrainingPattern<T>::TrainingPattern(const float randomDensity, const std::size_t numColumns, const std::size_t numRows) : randomDensity_{randomDensity}{
+generateRandomPattern(randomDensity, numColumns, numRows);
   }
 
 
@@ -101,7 +101,7 @@ generateRandomPattern(noise, numColumns, numRows);
 
 ///getPattern()
 template <typename T> 
-const std::vector<T> &TP::TrainingPattern<T>::getPattern() const{
+const std::vector<T> &TP::TrainingPattern<T>::getPattern() const noexcept{
   return pattern_;
 }
 
@@ -113,7 +113,7 @@ void TP::TrainingPattern<T>::regrid(const std::size_t numColumns, const std::siz
         throw std::invalid_argument("Number of columns and rows must be positive.");
     }
     if (!imgData_) {
-      generateRandomPattern(noise_, numColumns, numRows);
+      generateRandomPattern(randomDensity_, numColumns, numRows);
 return;
     }
 
@@ -155,12 +155,9 @@ return;
         average_luminance = static_cast<float>(total_luminance) / pixel_count;
       }
 
-      const int N=POINTS.size();
-for(int i=0;i<N;i++){
-  if(average_luminance>=i*maxLum/N&&average_luminance<(i+1)*maxLum/N){
-    pattern_.push_back(POINTS[i]);
-  }
-}
+      const int N=(POINTS.size()-1)*average_luminance/maxLum;
+    pattern_.push_back(POINTS[N]);
+
       
     }
   }

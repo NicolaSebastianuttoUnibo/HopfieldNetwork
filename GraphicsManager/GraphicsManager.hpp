@@ -1,6 +1,7 @@
 #ifndef GRAPHICS_MANAGER_H
 #define GRAPHICS_MANAGER_H
 
+#include <atomic>
 #include <functional>
 #include <string>
 
@@ -47,7 +48,7 @@ public:
 
   ~GraphicsManager();
 
-  bool beginFrame(std::vector<float *> kill = {});
+  bool beginFrame(std::vector<std::atomic<float> *> kill = {});
   void endFrame();
   void config();
 

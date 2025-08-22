@@ -152,7 +152,7 @@ return getVector;
 
 template <typename neurons_type, typename matrix_type>
 void HN::HopfieldNetwork<neurons_type, matrix_type>::resolvePattern(
-    CSP::CoherenceSetPattern<neurons_type>& cps, float* status) {
+    CSP::CoherenceSetPattern<neurons_type>& cps, std::atomic<float>*  status) {
 
 
     float count=0;
@@ -202,7 +202,10 @@ count++;
     float delta=-0.5f*(std::real(diff)*std::real(lf_c)-std::imag(diff)*std::imag(lf_c));
    getEnergy.push_back(delta+getEnergy.back());
   getVector[i]=best_point;
- *status = static_cast<float>(i + 1) / num_neurons;
+
+   if (status) {
+            status->store(static_cast<float>(i + 1) / num_neurons, std::memory_order_relaxed);
+        }
 
 }////for i
 

@@ -43,18 +43,18 @@ return ep_.getEnergy();
   }
 //getRow()
 template <typename T> 
-    const size_t& CSP::CoherenceSetPattern<T>::getRow() const noexcept{
+     size_t CSP::CoherenceSetPattern<T>::getRow() const noexcept{
       return rows_;
     }
     ///getCol()
 template <typename T> 
-  const size_t& CSP::CoherenceSetPattern<T>::getCol() const noexcept{
+   size_t CSP::CoherenceSetPattern<T>::getCol() const noexcept{
       return cols_;
   }
 
 ///hasSameDimensionOf()
 template <typename T> 
-  bool CSP::CoherenceSetPattern<T>::hasSameDimensionOf(CoherenceSetPattern& other){
+  bool CSP::CoherenceSetPattern<T>::hasSameDimensionOf(CoherenceSetPattern& other)const{
      return other.cols_==cols_&&other.rows_==rows_;
    
   }

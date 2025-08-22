@@ -44,10 +44,10 @@ public:
   const std::vector<T>& getNoisyPatternVector() const noexcept;
   const std::vector<T>& getEvolvingPatternVector() const noexcept;
   const std::vector<float>& getEnergy() const noexcept;
-  const size_t& getRow() const noexcept;
-  const size_t& getCol() const noexcept;
+   size_t getRow() const noexcept;
+   size_t getCol() const noexcept;
 
-  bool hasSameDimensionOf(CoherenceSetPattern& anotherCoherenceSetPattern);
+  bool hasSameDimensionOf(CoherenceSetPattern& anotherCoherenceSetPattern)const;
 
 
   void flipNoisyPixel(std::size_t pos);

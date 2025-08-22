@@ -12,14 +12,14 @@ EP::EvolvingPattern<T>::EvolvingPattern(const std::vector<T> &pattern) : pattern
 ///getPattern() const
 template <typename T> 
 
-  const std::vector<T>& EP::EvolvingPattern<T>::getPattern() const {
+  const std::vector<T>& EP::EvolvingPattern<T>::getPattern() const noexcept{
     return pattern_; 
   }
 ///getPattern()
 
 template <typename T> 
 
-   std::vector<T>& EP::EvolvingPattern<T>::getPattern()  {
+   std::vector<T>& EP::EvolvingPattern<T>::getPattern() noexcept {
     return pattern_; 
   }
 
@@ -27,14 +27,14 @@ template <typename T>
 
 template <typename T> 
 
-    const std::vector<float>& EP::EvolvingPattern<T>::getEnergy() const {
+    const std::vector<float>& EP::EvolvingPattern<T>::getEnergy() const noexcept{
     return energy_; 
   }
 ///getEnergy() 
 
 template <typename T> 
 
-  std::vector<float>& EP::EvolvingPattern<T>::getEnergy() {
+  std::vector<float>& EP::EvolvingPattern<T>::getEnergy() noexcept {
     return energy_; 
   }
 
@@ -42,5 +42,5 @@ template <typename T>
 
 template <typename T> 
 
-  void EP::EvolvingPattern<T>::clearEnergy(){
+  void EP::EvolvingPattern<T>::clearEnergy() noexcept{
   energy_.clear();}

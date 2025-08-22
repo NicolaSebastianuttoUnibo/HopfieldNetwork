@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <complex>
 
+#include <atomic>
 #include <vector> 
 
 namespace CSP {
@@ -43,16 +44,16 @@ const matrix_type localField(const int index, const std::vector<neurons_type>& i
    float calculateEnergy(const std::vector<neurons_type>& input);
    void  clearEnergy(CSP::CoherenceSetPattern<neurons_type>& cps);
     const std::vector<neurons_type> resolvePattern(const std::vector<neurons_type>& array) const;
-    void  resolvePattern(CSP::CoherenceSetPattern<neurons_type>& cps, float* status=nullptr);
+    void  resolvePattern(CSP::CoherenceSetPattern<neurons_type>& cps, std::atomic<float>* status=nullptr);
 
 
 
 
 
    template<typename Iterable, typename Extractor>
-void trainNetworkWithPseudoinverse(const Iterable& patterns, const Extractor extractor, float* status = nullptr);
+void trainNetworkWithPseudoinverse(const Iterable& patterns, const Extractor extractor, std::atomic<float>* status = nullptr);
    template<typename Iterable, typename Extractor>
-void trainNetworkWithHebb(const Iterable& patterns, const Extractor extractor, float* status = nullptr);
+void trainNetworkWithHebb(const Iterable& patterns, const Extractor extractor, std::atomic<float>* status = nullptr);
    
 
 
@@ -64,7 +65,7 @@ void trainNetworkWithHebb(const Iterable& patterns, const Extractor extractor, f
 template <typename neurons_type, typename matrix_type>
 template<typename Iterable, typename Extractor>
 
-void HN::HopfieldNetwork<neurons_type, matrix_type>::trainNetworkWithHebb(const Iterable& patterns, const Extractor extractor, float* status) {
+void HN::HopfieldNetwork<neurons_type, matrix_type>::trainNetworkWithHebb(const Iterable& patterns, const Extractor extractor, std::atomic<float>* status) {
    
     if (patterns.empty()) {return;}
     const int numberNeurons = extractor(*patterns.begin()).size();
@@ -76,6 +77,11 @@ void HN::HopfieldNetwork<neurons_type, matrix_type>::trainNetworkWithHebb(const 
     W_ij = Eigen::Matrix<matrix_type, Eigen::Dynamic, Eigen::Dynamic>::Zero(numberNeurons, numberNeurons);
 
     for (const auto& pattern_container : patterns) {
+
+if (status && status->load(std::memory_order_relaxed) < 0.0f) {
+            return;
+        }
+
         const auto& p_std = extractor(pattern_container);
         Eigen::Matrix<matrix_type, Eigen::Dynamic, 1> p(numberNeurons); 
         for (int k = 0; k < numberNeurons; ++k) {
@@ -83,37 +89,18 @@ void HN::HopfieldNetwork<neurons_type, matrix_type>::trainNetworkWithHebb(const 
         }
 
    W_ij += (p * p.adjoint()) * norm_factor;
-   if(status){
-                if(*status<0){
-                  return;
-                }
-                count++;
-            *status = static_cast<float>(count) / totalIteration;}
+
+   
+ if(status){
+            count++;
+            status->store(static_cast<float>(count) / totalIteration, std::memory_order_relaxed);
+        }
+
+
 
     }///for patterns
    W_ij.diagonal().setZero();
-        // metodo alternativo per fare la stessa cosa ma funzionante solo per numeri reali e non per numeri complessi 
-        //     W_ij = Eigen::Matrix<matrix_type, Eigen::Dynamic, Eigen::Dynamic>::Zero(numberNeurons, numberNeurons);
 
-        // for (int i = 0; i < numberNeurons; ++i) {
-        //     for (int j = i; j < numberNeurons; ++j) {
-                
-        //         if(status!=nullptr){
-        //         if(*status<0){
-        //           return;
-        //         }
-        //            count++;
-        //            *status = static_cast<float>(count) / totalIteration;
-        //         }
-                
-               
-        //         if(i==j){continue;}
-        //           matrix_type product_p_ij = static_cast<matrix_type>(p[i] * p[j])* norm_factor;
-        //     W_ij(i,j) += product_p_ij ;
-        //     W_ij(j,i) += product_p_ij ;
-            
-        //     }
-        // }
 
 
 
@@ -124,7 +111,7 @@ void HN::HopfieldNetwork<neurons_type, matrix_type>::trainNetworkWithHebb(const 
 
 template <typename neurons_type, typename matrix_type>
 template <typename Iterable, typename Extractor>
-void HN::HopfieldNetwork<neurons_type, matrix_type>::trainNetworkWithPseudoinverse(const Iterable& patterns, const Extractor extractor, float* status) {
+void HN::HopfieldNetwork<neurons_type, matrix_type>::trainNetworkWithPseudoinverse(const Iterable& patterns, const Extractor extractor, std::atomic<float>*  status) {
 
     const size_t numPatterns = patterns.size();
     const size_t numNeurons = extractor(*patterns.begin()).size();
@@ -146,25 +133,23 @@ void HN::HopfieldNetwork<neurons_type, matrix_type>::trainNetworkWithPseudoinver
     
     Eigen::Matrix<matrix_type, Eigen::Dynamic, Eigen::Dynamic> C_inv = C.inverse();
     
-    if (status) *status = 0.1f;
 
     auto T = X * C_inv;
 
-    if (status) *status = 0.5f;
 
     auto X_H = X.adjoint(); 
-    if (status) *status = 0.75f;
 
     W_ij.resize(numNeurons, numNeurons); 
 
     for (size_t i = 0; i < numNeurons; ++i) {
-        if (status && *status < 0) return;  
+          if (status && status->load(std::memory_order_relaxed) < 0.0f) {
+            return;
+        }
 
         W_ij.row(i) = T.row(i) * X_H; 
         
-if (status) {
-            if(*status<0){return;}
-            *status = (static_cast<float>(i) / numNeurons) ;
+  if (status) {
+            status->store(static_cast<float>(i) / numNeurons, std::memory_order_relaxed);
         }
 
 
