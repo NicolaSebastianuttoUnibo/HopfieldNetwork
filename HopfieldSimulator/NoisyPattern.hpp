@@ -10,9 +10,8 @@
 
 namespace NP {
 
-
-inline  std::mt19937& getRandomGenerator() {
-    static std::mt19937 gen(std::random_device{}()); 
+inline std::mt19937& getRandomGenerator(uint32_t seed_value = std::random_device{}()) {
+    static std::mt19937 gen(seed_value); 
     return gen;
 }
 
