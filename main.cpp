@@ -1,5 +1,5 @@
 
-#include "GraphicsManager.hpp"
+#include "GraphicsManager/GraphicsManager.hpp"
 #include "HopfieldSimulator/CoherenceSetPattern.hpp"
 #include "HopfieldSimulator/HopfieldNetwork.hpp"
 #include "HopfieldSimulator/HopfieldSimulator.hpp"

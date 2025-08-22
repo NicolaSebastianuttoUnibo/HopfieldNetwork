@@ -21,9 +21,6 @@ template <typename neurons_type = int8_t, typename matrix_type = double>
 
   std::vector<bool> isStateEvolving_;
   HN::HopfieldNetwork<neurons_type,matrix_type> hn_;
-  
-  size_t cols_;
-  size_t rows_;
 
   bool isHopfieldGoing() const;
   bool check_=true;

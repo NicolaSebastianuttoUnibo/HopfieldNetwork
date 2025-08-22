@@ -63,7 +63,6 @@ void HS::HopfieldSimulator<neurons_type, matrix_type>::emplace_pattern(const std
     patterns_.emplace_back(std::make_unique<CSP::CoherenceSetPattern<neurons_type>>(path,  a,  b));
   
     isStateEvolving_.push_back(false);
-cols_=a;rows_=b;
   }
   
 template<typename neurons_type, typename matrix_type>
@@ -71,7 +70,6 @@ void HS::HopfieldSimulator<neurons_type, matrix_type>::emplace_pattern(const flo
     patterns_.emplace_back(std::make_unique<CSP::CoherenceSetPattern<neurons_type>>(noise,  a,  b));
   
     isStateEvolving_.push_back(false);
-cols_=a;rows_=b;
   }
 
 
@@ -92,7 +90,6 @@ template <typename neurons_type, typename matrix_type>
        patterns_.emplace_back(std::make_unique<CSP::CoherenceSetPattern<neurons_type>>(noise,  numColumns,  numRows));
   
     isStateEvolving_.push_back(false);
-cols_=numColumns;rows_=numRows;
   }
 
 ///regrid()
@@ -102,8 +99,7 @@ void HS::HopfieldSimulator<neurons_type,matrix_type>::regrid(size_t numColumns, 
   if(!check_){return;}
   if(isHopfieldGoing()){return;}
   check_=false;
-   cols_=numColumns;
-   rows_=numRows;
+
 for(auto &element : patterns_){
   element->regrid(numColumns,  numRows);
 }
@@ -145,9 +141,11 @@ return;}
 
 template<typename neurons_type, typename matrix_type>
 void HS::HopfieldSimulator<neurons_type, matrix_type>::saveFileTraining(const std::string& str_buffer) {
-    
-    const int numColumns = cols_;
-    const int numRows = rows_;
+    if(patterns_.size()==0){
+return;}
+
+    const size_t numColumns = patterns_[0]->getCol();
+    const size_t numRows = patterns_[0]->getRow();
 
     const std::vector<matrix_type>& matrix = hn_.getTraining();
 
@@ -195,8 +193,7 @@ template <typename neurons_type, typename matrix_type>
   void HS::HopfieldSimulator<neurons_type,matrix_type>::setTraining(const int numColumns, const int numRows, std::vector<matrix_type>& matrix ){
  if(!check_){return;}
     check_=false;
-cols_=numColumns;
-rows_=numRows;
+
     const int dim=std::sqrt(matrix.size());
     if(dim*dim!=matrix.size()){
        throw std::logic_error("Dimensione non compatibile");
@@ -252,5 +249,9 @@ template <typename neurons_type, typename matrix_type>
 
 template <typename neurons_type, typename matrix_type> 
  bool HS::HopfieldSimulator<neurons_type,matrix_type>::checkDimension() {
-  return rows_*cols_*rows_*cols_==hn_.getTraining().size();
+  if(patterns_.size()==0){
+return false;}
+    const size_t cols = patterns_[0]->getCol();
+    const size_t rows = patterns_[0]->getRow();
+  return rows*cols*rows*cols==hn_.getTraining().size();
 }

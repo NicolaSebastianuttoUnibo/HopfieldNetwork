@@ -3,7 +3,7 @@
 #include <fstream>
 #include <map>
 
-#include "imgui/imgui.h"
+#include "../imgui/imgui.h"
 
 template <typename T, typename M>
 void Comp<T,M>::drawGrid(const std::vector<T> &data, int cols, int rows,

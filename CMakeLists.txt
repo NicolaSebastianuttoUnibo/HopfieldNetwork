@@ -52,7 +52,9 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/eigen)
 
 # Aggiunge il target eseguibile. Specifica il nome dell'eseguibile e i file sorgente. 
 
-add_executable(main main.cpp GraphicsManager.cpp Components.cpp FileDialogHelper.cpp HopfieldSimulator/TrainingPattern.cpp HopfieldSimulator/NoisyPattern.cpp  HopfieldSimulator/EvolvingPattern.cpp  HopfieldSimulator/CoherenceSetPattern.cpp HopfieldSimulator/HopfieldNetwork.cpp HopfieldSimulator/HopfieldSimulator.cpp 
+add_executable(main main.cpp
+ HopfieldSimulator/TrainingPattern.cpp HopfieldSimulator/NoisyPattern.cpp  HopfieldSimulator/EvolvingPattern.cpp  HopfieldSimulator/CoherenceSetPattern.cpp HopfieldSimulator/HopfieldNetwork.cpp HopfieldSimulator/HopfieldSimulator.cpp 
+ GraphicsManager/GraphicsManager.cpp GraphicsManager/Components.cpp GraphicsManager/FileDialogHelper.cpp
 
  ImGuiFileDialog/ImGuiFileDialog.cpp imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp imgui/imgui_widgets.cpp imgui/imgui_demo.cpp imgui/backends/imgui_impl_sdl2.cpp imgui/backends/imgui_impl_opengl3.cpp
 ) 
