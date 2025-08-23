@@ -2,7 +2,6 @@
 #define TRAINING_PATTERN_HPP
 
 #include <memory>
-#include <random>
 #include <string>
 #include <vector>
 
@@ -21,10 +20,6 @@ struct StbiImageDeleter {
 };
 
 
-inline std::mt19937& getRandomGenerator(uint32_t seed_value = std::random_device{}()) {
-    static std::mt19937 gen(seed_value); 
-    return gen;
-}
 
 template <typename T = int8_t> 
 

@@ -5,6 +5,9 @@ Inanzitutto parliamo di una classe che ho dovuto implementare per conoscere la d
 ## math/Cast.hpp
 Dato che nelle reti di hopfield si lavora sia con i double per la costruzione delle matrici sia con numeri interi per rappresentare lo stato di un singolo pixel: era necessario introdurre una funzione che trasformasse gli std::complex<int> in std::complex<double> e viceversa. Quindi questa classe fa un overload di static_cast della standard library aggiungendo questa conversione.
 
+## math/RandomUtils.hpp
+È il generatore dei numeri causuali
+
 ## Training Pattern 
 Questa classe rappresenta il pattern originale con cui verrà addestrata la rete. L'input può essere sia una immagine che si trova in un percorso del proprio PC oppure può essere anche generato un regrid. Dato che l'utente può decidere se caricare una immagine oppure generare una immagine casuale, nel caso in cui l'utente ha inserito una immagine la funzione regrid manterrà i pixel della immagine originale mentre nel caso in cui l'utente voglia un pattern casuale la chiamata regrid genererà un pattern casuale nuovo da zero, in modo da evitare un appesantimento del codice in cui si tenta di ridimensionare un pattern casuale.
 

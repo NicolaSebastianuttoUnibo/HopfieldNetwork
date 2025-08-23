@@ -1,4 +1,7 @@
 #include "NoisyPattern.hpp"
+
+#include "math/RandomUtils.hpp"
+
  #include <stdexcept> 
 #include <algorithm> 
 #include <iterator>
@@ -13,7 +16,7 @@ if (noise < 0.0f || noise > 1.0f) {
 
 std::uniform_real_distribution<float> real(0.0f, 1.0f);
 std::uniform_int_distribution<int> integer(0, static_cast<int>(POINTS.size() - 1));
-auto& generator = getRandomGenerator();
+auto& generator = RU::getRandomGenerator();
 
      for (auto &val : pattern_) {
           if (real(generator) < noise) {

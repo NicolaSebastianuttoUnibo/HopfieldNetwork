@@ -3,6 +3,8 @@
 
 #include "TrainingPattern.hpp"
 #include "../stb/stb_image.h"
+#include "math/RandomUtils.hpp"
+
 
 #include <stdexcept>
 #include <algorithm>
@@ -56,7 +58,7 @@ const size_t N=numColumns*numRows;
 pattern_.reserve(N);
 std::uniform_real_distribution<float> real(0.0f, 1.0f);
 std::uniform_int_distribution<int> integer(0, static_cast<int>(POINTS.size() - 1));
-auto& generator = getRandomGenerator();
+auto& generator = RU::getRandomGenerator();
 
      for (size_t i=0;i<N;i++) {
              int random_index = integer(generator);

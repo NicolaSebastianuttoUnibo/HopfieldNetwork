@@ -1,7 +1,6 @@
 #ifndef NOISY_PATTERN_HPP
 #define NOISY_PATTERN_HPP
 
-#include <random>
 #include <vector>
 
 #include "math/MathDimension.hpp"
@@ -9,11 +8,6 @@
 #include <complex>
 
 namespace NP {
-
-inline std::mt19937& getRandomGenerator(uint32_t seed_value = std::random_device{}()) {
-    static std::mt19937 gen(seed_value); 
-    return gen;
-}
 
 template <typename T = int8_t> 
 class NoisyPattern {
