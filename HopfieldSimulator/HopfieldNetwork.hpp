@@ -40,7 +40,7 @@ const matrix_type localField(const int index, const std::vector<neurons_type>& i
 
    float calculateEnergy(const std::vector<neurons_type>& input);
     const std::vector<neurons_type> resolvePattern(const std::vector<neurons_type>& array) const;
-    void  resolvePattern(EP::EvolvingPattern<neurons_type>& ep, std::atomic<float>* status=nullptr);
+    void  resolvePattern(std::vector<neurons_type>& getVector, std::vector<float>& getEnergy, std::atomic<float>* status=nullptr);
 
 
 

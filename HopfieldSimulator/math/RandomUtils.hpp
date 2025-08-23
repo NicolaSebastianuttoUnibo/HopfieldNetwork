@@ -5,10 +5,15 @@
 
 namespace RU{
 
-inline std::mt19937& getRandomGenerator(uint32_t seed_value = std::random_device{}()) {
-    static std::mt19937 gen(seed_value); 
+inline std::mt19937& getRandomGenerator() {
+    static std::mt19937 gen(std::random_device{}()); 
     return gen;
 }
+
+inline void seedGenerator(uint32_t seed_value = std::random_device{}()) {
+    getRandomGenerator().seed(seed_value);
+}
+
 
 }
 

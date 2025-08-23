@@ -130,11 +130,9 @@ return getVector;
 
 
     template <typename neurons_type, typename matrix_type>
-void HN::HopfieldNetwork<neurons_type, matrix_type>::resolvePattern(EP::EvolvingPattern<neurons_type>& ep, std::atomic<float>* status){
+void HN::HopfieldNetwork<neurons_type, matrix_type>::resolvePattern(std::vector<neurons_type>& getVector, std::vector<float>& getEnergy, std::atomic<float>* status){
       float count=0;
-   std::vector<neurons_type>& getVector=ep.getPattern();
   
-  std::vector<float>& getEnergy=ep.getEnergy();
   const int num_neurons =getVector.size();
 
 

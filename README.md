@@ -21,28 +21,28 @@ Evolving Pattern è il pattern che può essere modificato in modo dinamico per o
 Questa classe contiene una matrice ch può essere modificata inserendo i pattern che si vuole e si può risolvere un pattern corrotto. Inoltre questa classe può calcolare l'energia intrinseca di un qualsiasi tipo di pattern, originale, corrotto oppure evoluto. Hopfield Network ha due rappresentazioni matriciali: una con Eigen, efficinte per le operazioni matematiche, e l'altra vettoriale, necessaria per importare o esportare i dati di questa matrice, infatti si ha un aggiornamento delle matrici solo nel momento di trascrizione o lettura dei dati.
 In questa classe viene usata la libreria di Eigen che ottimizza le operazioni matriciali:
 quindi a favore della mia funzione che opera solo a numeri reali:
-        // metodo alternativo per fare la stessa cosa ma funzionante solo per numeri reali e non per numeri complessi 
-        //     W_ij = Eigen::Matrix<matrix_type, Eigen::Dynamic, Eigen::Dynamic>::Zero(numberNeurons, numberNeurons);
+        ////metodo alternativo per fare la stessa cosa ma funzionante solo per numeri reali e non per numeri complessi 
+             W_ij = Eigen::Matrix<matrix_type, Eigen::Dynamic, Eigen::Dynamic>::Zero(numberNeurons, numberNeurons);
 
-        // for (int i = 0; i < numberNeurons; ++i) {
-        //     for (int j = i; j < numberNeurons; ++j) {
+         for (int i = 0; i < numberNeurons; ++i) {
+             for (int j = i; j < numberNeurons; ++j) {
                 
-        //         if(status!=nullptr){
-        //         if(*status<0){
-        //           return;
-        //         }
-        //            count++;
-        //            *status = static_cast<float>(count) / totalIteration;
-        //         }
+                 if(status!=nullptr){
+              if(*status<0){
+                   return;
+                 }
+                    count++;
+                    *status = static_cast<float>(count) / totalIteration;
+                 }
                 
                
-        //         if(i==j){continue;}
-        //           matrix_type product_p_ij = static_cast<matrix_type>(p[i] * p[j])* norm_factor;
-        //     W_ij(i,j) += product_p_ij ;
-        //     W_ij(j,i) += product_p_ij ;
+                 if(i==j){continue;}
+                   matrix_type product_p_ij = static_cast<matrix_type>(p[i] * p[j])* norm_factor;
+             W_ij(i,j) += product_p_ij ;
+             W_ij(j,i) += product_p_ij ;
             
-        //     }
-        // }
+             }
+         }
     Questa è stata sostituita con una versione generale che accettasse anche numeri complessi
 
 ## Coherence Set Pattern

@@ -59,7 +59,7 @@ public:
 template <typename MatrixType = double> 
 void resolveEvolvingPattern(HN::HopfieldNetwork<T, MatrixType>& network, std::atomic<float>* status) {
      
-  network.resolvePattern(this->ep_, status);
+  network.resolvePattern(this->ep_.getPattern(), this->ep_.getEnergy(), status);
         }
 void clearEnergy() {
             ep_.getEnergy().clear();
