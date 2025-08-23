@@ -7,7 +7,7 @@
 #include <iterator>
 
 template <typename T> 
-auto POINTS =   MD::getMathematicalVertex<T>();
+static auto POINTS =   MD::getMathematicalVertex<T>();
 
 //private functions
 //generateCorruptedPattern()
@@ -18,8 +18,8 @@ if (noise < 0.0f || noise > 1.0f) {
     }
 
 
-std::uniform_real_distribution<float> real(0.0f, 1.0f);
-std::uniform_int_distribution<int> integer(0, static_cast<int>(POINTS<T>.size() - 1));
+static std::uniform_real_distribution<float> real(0.0f, 1.0f);
+static std::uniform_int_distribution<int> integer(0, static_cast<int>(POINTS<T>.size() - 1));
 auto& generator = RU::getRandomGenerator();
 
      for (auto &val : pattern_) {

@@ -8,7 +8,7 @@
 #include <algorithm>
 
 template <typename T> 
-auto POINTS =   MD::getMathematicalVertex<T>();
+static auto POINTS =   MD::getMathematicalVertex<T>();
 
 //generateRandomPattern()
 template <typename T>
@@ -20,8 +20,8 @@ template <typename T>
 const size_t N=numColumns*numRows;
     this->pattern_.clear();
 this->pattern_.reserve(N);
-std::uniform_real_distribution<float> real(0.0f, 1.0f);
-std::uniform_int_distribution<int> integer(0, static_cast<int>(POINTS<T>.size() - 1));
+static std::uniform_real_distribution<float> real(0.0f, 1.0f);
+static std::uniform_int_distribution<int> integer(0, static_cast<int>(POINTS<T>.size() - 1));
 auto& generator = RU::getRandomGenerator();
 
      for (size_t i=0;i<N;i++) {

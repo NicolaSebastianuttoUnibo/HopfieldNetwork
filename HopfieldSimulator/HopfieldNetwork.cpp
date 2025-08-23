@@ -6,7 +6,7 @@
 #include <cmath>
 
 template <typename T> 
-auto POINTS =   MD::getMathematicalVertex<T>();
+static auto POINTS =   MD::getMathematicalVertex<T>();
 
 //private function
 

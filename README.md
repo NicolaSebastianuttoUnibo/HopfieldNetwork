@@ -1,3 +1,4 @@
+
 # HopfieldNetwork
 In questa sezione verrà tratttato come è stato costruito la cartella HopfieldSimulator al cui interno si trovano diverse classi.
 ## math/MathDimension.hpp
