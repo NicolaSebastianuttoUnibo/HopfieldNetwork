@@ -48,7 +48,7 @@ void TP::TrainingPattern<T>::calculateIntegralImage() {
 
 //generateRandomPattern()
 template <typename T>
-  void TP::TrainingPattern<T>::generateRandomPattern(const float randomDensity, const std::size_t numColumns, const std::size_t numRows){
+  void TP::TrainingPattern<T>::generateRandomPattern(const float randomDensity, const std::size_t numColumns, const std::size_t numRows) {
 
     if (randomDensity < 0.0f || randomDensity > 1.0f) {
         throw std::invalid_argument("The random density must be in the interval [0.0 , 1.0]");
@@ -74,7 +74,7 @@ auto& generator = RU::getRandomGenerator();
 
 //constructor
 template <typename T> 
-TP::TrainingPattern<T>::TrainingPattern(const std::string &path, const std::size_t numColumns, const std::size_t numRows) {
+TP::TrainingPattern<T>::TrainingPattern(const std::string &path, const std::size_t numColumns, const std::size_t numRows) : randomDensity_{0.0f} {
   
    unsigned char* rawData = stbi_load(
         path.c_str(), &imgWidth_, &imgHeight_, &imgChannels_, 0

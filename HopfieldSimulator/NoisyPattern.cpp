@@ -43,9 +43,9 @@ const std::vector<T>& NP::NoisyPattern<T>::getPattern() const noexcept{
   return pattern_;
 }
 
-//flipPixel()
+//cyclePixelState()
 template <typename T> 
-void NP::NoisyPattern<T>::flipPixel(const std::size_t pixelIndex) {
+void NP::NoisyPattern<T>::cyclePixelState(const std::size_t pixelIndex) {
 if (pixelIndex>=pattern_.size()) {
 throw std::invalid_argument("pixelIndex is out of bounds.");
 }

@@ -123,7 +123,9 @@ void HN::HopfieldNetwork<neurons_type, matrix_type>::trainNetworkWithPseudoinver
     }
 
     Eigen::Matrix<matrix_type, Eigen::Dynamic, Eigen::Dynamic> C = X.adjoint() * X;
-    if (C.determinant() == matrix_type(0.0)) { 
+
+
+    if (std::abs(C.determinant()) < std::real(std::numeric_limits<matrix_type>::epsilon())) { 
         throw std::runtime_error("I pattern sono linearmente dipendenti, la matrice di correlazione non è invertibile.");
     }
     

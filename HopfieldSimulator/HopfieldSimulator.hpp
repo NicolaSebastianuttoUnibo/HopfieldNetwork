@@ -29,9 +29,9 @@ public:
 
   void clear(const int index);  
   void corruptPattern(const size_t index, const float noise=0.1f);
-  void emplace_pattern(const std::string& path, const int a, const int b);
-  void emplace_pattern(const float noise, const int a, const int b);
-  void flipPixelOnPattern(const size_t index, const size_t pixelPos);
+  void emplace_pattern(const std::string& path, const int numColumns, const int numRows);
+  void emplace_pattern(const float noise, const int numColumns, const int numRows);
+  void cyclePixelStateOnPattern(const size_t index, const size_t pixelPos);
   void generatePattern(const float noise, const std::size_t numColumns, const std::size_t numRows);
   void regrid(const size_t numColumns, const size_t numRows);
   void removePattern(const size_t index);

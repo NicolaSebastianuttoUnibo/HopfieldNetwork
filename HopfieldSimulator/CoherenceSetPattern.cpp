@@ -62,7 +62,7 @@ template <typename T>
 ///flipNoisyPixel()
 template <typename T> 
   void CSP::CoherenceSetPattern<T>::flipNoisyPixel(std::size_t pos){
-    np_.flipPixel(pos);
+    np_.cyclePixelState(pos);
     ep_.getPattern()=np_.getPattern();
 
   }

@@ -22,7 +22,7 @@ public:
   NoisyPattern(const std::vector<T> &sourcePattern, const float noise=0.1f);
   NoisyPattern() = delete;
     const std::vector<T> &getPattern() const noexcept;
-  void flipPixel(const std::size_t pixelIndex);
+  void cyclePixelState(const std::size_t pixelIndex);
 };
 
 template class NoisyPattern<int8_t>;

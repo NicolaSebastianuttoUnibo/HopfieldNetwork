@@ -307,7 +307,7 @@ int main(int, char **) {
 
           comp.drawGrid(noisy_data, pixel, pixel, "noisy_pattern",
                         [&](int hovered_index) {
-                          hs.flipPixelOnPattern(index, hovered_index);
+                          hs.cyclePixelStateOnPattern(index, hovered_index);
                         });
           ImGui::EndGroup();
 

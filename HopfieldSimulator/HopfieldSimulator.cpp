@@ -66,9 +66,9 @@ void HS::HopfieldSimulator<neurons_type, matrix_type>::emplace_pattern(const flo
 
 
 
-///flipPixelOnPattern()
+///cyclePixelStateOnPattern()
 template <typename neurons_type, typename matrix_type> 
-void HS::HopfieldSimulator<neurons_type,matrix_type>::flipPixelOnPattern(const size_t index, const size_t pos) {
+void HS::HopfieldSimulator<neurons_type,matrix_type>::cyclePixelStateOnPattern(const size_t index, const size_t pos) {
  std::lock_guard<std::mutex> lock(mtx_);
 
  patterns_[index]->flipNoisyPixel(pos);
