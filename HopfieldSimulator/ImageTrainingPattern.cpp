@@ -1,13 +1,17 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 
-#include "TrainingPattern.hpp"
+#include "ITrainingPattern.hpp"
 #include "../stb/stb_image.h"
-#include "math/RandomUtils.hpp"
 
 
 #include <stdexcept>
 #include <algorithm>
+
+// namespace TP{
+//     template <typename T>
+// constexpr std::array<T,MD::getMathematicalNumberVertex<T>()> VectorBasedTrainingPattern<T>::POINTS;
+// }
 
 ///StbiImageDeleter
 void TP::StbiImageDeleter::operator()(unsigned char* data) const {
@@ -19,7 +23,7 @@ void TP::StbiImageDeleter::operator()(unsigned char* data) const {
 ///private function of TrainingPattern
 //calculateIntegralImage()
 template <typename T>
-void TP::TrainingPattern<T>::calculateIntegralImage() {
+void TP::ImageTrainingPattern<T>::calculateIntegralImage() {
     const std::size_t integral_width = imgWidth_ + 1;
     const std::size_t integral_height = imgHeight_ + 1;
     imgIntegral_.assign(integral_width * integral_height, 0);
@@ -45,37 +49,13 @@ void TP::TrainingPattern<T>::calculateIntegralImage() {
     }
 }
 
-
-//generateRandomPattern()
-template <typename T>
-  void TP::TrainingPattern<T>::generateRandomPattern(const float randomDensity, const std::size_t numColumns, const std::size_t numRows) {
-
-    if (randomDensity < 0.0f || randomDensity > 1.0f) {
-        throw std::invalid_argument("The random density must be in the interval [0.0 , 1.0]");
-    }
-const size_t N=numColumns*numRows;
-    pattern_.clear();
-pattern_.reserve(N);
-std::uniform_real_distribution<float> real(0.0f, 1.0f);
-std::uniform_int_distribution<int> integer(0, static_cast<int>(POINTS.size() - 1));
-auto& generator = RU::getRandomGenerator();
-
-     for (size_t i=0;i<N;i++) {
-             int random_index = integer(generator);
-             pattern_.push_back( POINTS[random_index]);
-     
-
-
-}
-  }
-
-
 ///public function of TrainingPattern
 
 //constructor
-template <typename T> 
-TP::TrainingPattern<T>::TrainingPattern(const std::string &path, const std::size_t numColumns, const std::size_t numRows) : randomDensity_{0.0f} {
-  
+template <typename T>
+TP::ImageTrainingPattern<T>::ImageTrainingPattern(const std::string &path, const std::size_t numColumns, const std::size_t numRows)
+    : VectorBasedTrainingPattern<T>() 
+{
    unsigned char* rawData = stbi_load(
         path.c_str(), &imgWidth_, &imgHeight_, &imgChannels_, 0
     );
@@ -91,31 +71,17 @@ if (rawData == nullptr) {
 
 }
 
-///second constructor
-template <typename T> 
 
-  TP::TrainingPattern<T>::TrainingPattern(const float randomDensity, const std::size_t numColumns, const std::size_t numRows) : randomDensity_{randomDensity}{
-generateRandomPattern(randomDensity, numColumns, numRows);
-  }
-
-
-
-
-///getPattern()
-template <typename T> 
-const std::vector<T> &TP::TrainingPattern<T>::getPattern() const noexcept{
-  return pattern_;
-}
 
 ///regrid()
 template <typename T> 
-void TP::TrainingPattern<T>::regrid(const std::size_t numColumns, const std::size_t numRows) {
+void TP::ImageTrainingPattern<T>::regrid(const std::size_t numColumns, const std::size_t numRows) {
 
     if (numColumns == 0 || numRows == 0) {
         throw std::invalid_argument("Number of columns and rows must be positive.");
     }
     if (!imgData_) {
-      generateRandomPattern(randomDensity_, numColumns, numRows);
+throw std::invalid_argument("Image Data not found");
 return;
     }
 
@@ -126,8 +92,8 @@ return;
    const std::size_t integral_width = imgWidth_ + 1;
 
    
-    pattern_.clear();
-    pattern_.reserve(numColumns * numRows);
+    this->pattern_.clear();
+    this->pattern_.reserve(numColumns * numRows);
 
   const float cell_width = static_cast<float>(imgWidth_) / numColumns;
   const float cell_height = static_cast<float>(imgHeight_) / numRows;
@@ -158,7 +124,7 @@ return;
       }
 
       const float N=(POINTS.size()-1.0f)*(average_luminance)/maxLum+1.0f/POINTS.size();
-    pattern_.push_back(POINTS[N]);
+    this->pattern_.push_back(POINTS[N]);
 
       
     }

@@ -1,11 +1,13 @@
 #ifndef COHERENCE_SET_PATTERN_HPP
 #define COHERENCE_SET_PATTERN_HPP
 
-#include "TrainingPattern.hpp"
+#include "ITrainingPattern.hpp"
 #include "NoisyPattern.hpp"
 #include "EvolvingPattern.hpp"
 #include "HopfieldNetwork.hpp"
 
+#include <atomic>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -24,7 +26,7 @@ class CoherenceSetPattern {
 
 
   private:
-  TP::TrainingPattern<T> tp_;
+  std::unique_ptr<TP::ITrainingPattern<T>> tp_;
   NP::NoisyPattern<T> np_;
   EP::EvolvingPattern<T> ep_;
   size_t cols_;

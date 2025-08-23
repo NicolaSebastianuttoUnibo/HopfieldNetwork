@@ -11,17 +11,17 @@ template <typename T>
 ///public function
 //constructor
 template <typename T> 
-    CSP::CoherenceSetPattern<T>::CoherenceSetPattern(const std::string &path, const std::size_t numColumns, const std::size_t numRows) : tp_(path, numColumns, numRows), np_(tp_.getPattern()), ep_(np_.getPattern()),cols_{numColumns}, rows_{numRows}  { }
+    CSP::CoherenceSetPattern<T>::CoherenceSetPattern(const std::string &path, const std::size_t numColumns, const std::size_t numRows) : tp_(std::make_unique<TP::ImageTrainingPattern<T>>(path, numColumns, numRows)), np_(tp_->getPattern()), ep_(np_.getPattern()),cols_{numColumns}, rows_{numRows}  { }
 
 
     // second constructor
 template <typename T> 
-    CSP::CoherenceSetPattern<T>::CoherenceSetPattern(const float noise, const std::size_t numColumns, const std::size_t numRows) : tp_(noise, numColumns, numRows), np_(tp_.getPattern()), ep_(np_.getPattern()),cols_{numColumns}, rows_{numRows}  { }
+    CSP::CoherenceSetPattern<T>::CoherenceSetPattern(const float noise, const std::size_t numColumns, const std::size_t numRows) : tp_(std::make_unique<TP::RandomTrainingPattern<T>>(noise, numColumns, numRows)), np_(tp_->getPattern()), ep_(np_.getPattern()),cols_{numColumns}, rows_{numRows}  { }
 
     ///getTrainingPatternVector()
 template <typename T> 
   const std::vector<T>& CSP::CoherenceSetPattern<T>::getTrainingPatternVector() const noexcept {
-return tp_.getPattern();
+return tp_->getPattern();
   }
   
   ///getNoisyPatternVector()
@@ -71,7 +71,7 @@ template <typename T>
 
 template <typename T> 
   void CSP::CoherenceSetPattern<T>::reCorrupt(const float noise){
-np_=NP::NoisyPattern(tp_.getPattern(),noise);
+np_=NP::NoisyPattern(tp_->getPattern(),noise);
 ep_.getPattern()=np_.getPattern();
   }
 
@@ -80,7 +80,7 @@ template <typename T>
   void CSP::CoherenceSetPattern<T>::regrid(const std::size_t numColumns, const std::size_t numRows){
     rows_=numRows;
     cols_=numColumns;
-    tp_.regrid(numColumns,numRows);
+    tp_->regrid(numColumns,numRows);
 reCorrupt();
   }
 
