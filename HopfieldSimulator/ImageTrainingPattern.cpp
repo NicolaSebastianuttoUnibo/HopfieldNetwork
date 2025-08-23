@@ -8,10 +8,8 @@
 #include <stdexcept>
 #include <algorithm>
 
-// namespace TP{
-//     template <typename T>
-// constexpr std::array<T,MD::getMathematicalNumberVertex<T>()> VectorBasedTrainingPattern<T>::POINTS;
-// }
+template <typename T> 
+auto POINTS =   MD::getMathematicalVertex<T>();
 
 ///StbiImageDeleter
 void TP::StbiImageDeleter::operator()(unsigned char* data) const {
@@ -54,7 +52,6 @@ void TP::ImageTrainingPattern<T>::calculateIntegralImage() {
 //constructor
 template <typename T>
 TP::ImageTrainingPattern<T>::ImageTrainingPattern(const std::string &path, const std::size_t numColumns, const std::size_t numRows)
-    : VectorBasedTrainingPattern<T>() 
 {
    unsigned char* rawData = stbi_load(
         path.c_str(), &imgWidth_, &imgHeight_, &imgChannels_, 0
@@ -123,8 +120,12 @@ return;
         average_luminance = static_cast<float>(total_luminance) / pixel_count;
       }
 
-      const float N=(POINTS.size()-1.0f)*(average_luminance)/maxLum+1.0f/POINTS.size();
-    this->pattern_.push_back(POINTS[N]);
+
+size_t index = static_cast<size_t>(average_luminance / maxLum * POINTS<T>.size());
+if (index >= POINTS<T>.size()) {
+    index = POINTS<T>.size() - 1;
+}
+      this->pattern_.push_back(POINTS<T>[index]);
 
       
     }

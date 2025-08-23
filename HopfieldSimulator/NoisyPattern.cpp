@@ -5,6 +5,10 @@
  #include <stdexcept> 
 #include <algorithm> 
 #include <iterator>
+
+template <typename T> 
+auto POINTS =   MD::getMathematicalVertex<T>();
+
 //private functions
 //generateCorruptedPattern()
 template <typename T> 
@@ -15,13 +19,13 @@ if (noise < 0.0f || noise > 1.0f) {
 
 
 std::uniform_real_distribution<float> real(0.0f, 1.0f);
-std::uniform_int_distribution<int> integer(0, static_cast<int>(POINTS.size() - 1));
+std::uniform_int_distribution<int> integer(0, static_cast<int>(POINTS<T>.size() - 1));
 auto& generator = RU::getRandomGenerator();
 
      for (auto &val : pattern_) {
           if (real(generator) < noise) {
              int random_index = integer(generator);
-             val = POINTS[random_index];
+             val = POINTS<T>[random_index];
      }
 
 
@@ -49,13 +53,13 @@ void NP::NoisyPattern<T>::cyclePixelState(const std::size_t pixelIndex) {
 if (pixelIndex>=pattern_.size()) {
 throw std::invalid_argument("pixelIndex is out of bounds.");
 }
- auto it = std::find(POINTS.begin(), POINTS.end(), pattern_[pixelIndex]);
+ auto it = std::find(POINTS<T>.begin(), POINTS<T>.end(), pattern_[pixelIndex]);
 
   
-    if (it == POINTS.end()) {
+    if (it == POINTS<T>.end()) {
         throw std::invalid_argument("Current pixel value is not found in POINTS set.");
     }
-    pattern_[pixelIndex] = POINTS[(std::distance(POINTS.begin(), it) + 1) % POINTS.size()];
+    pattern_[pixelIndex] = POINTS<T>[(std::distance(POINTS<T>.begin(), it) + 1) % POINTS<T>.size()];
 
 
 

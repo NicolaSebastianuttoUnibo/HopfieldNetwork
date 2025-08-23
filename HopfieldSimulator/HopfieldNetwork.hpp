@@ -24,9 +24,7 @@ template <typename neurons_type = int8_t, typename matrix_type = double>
 class HopfieldNetwork{
     private:
     
-       static constexpr
-   std::array<neurons_type,MD::getMathematicalNumberVertex<neurons_type>()>POINTS =
-    MD::getMathematicalVertex<neurons_type>();
+     
 
     Eigen::Matrix<matrix_type, Eigen::Dynamic, Eigen::Dynamic> W_ij;
 const matrix_type localField(const int index, const std::vector<neurons_type>& input);
@@ -78,8 +76,10 @@ if (status && status->load(std::memory_order_relaxed) < 0.0f) {
             return;
         }
 
+
+            Eigen::Matrix<matrix_type, Eigen::Dynamic, 1> p(numberNeurons); 
+
         const auto& p_std = extractor(pattern_container);
-        Eigen::Matrix<matrix_type, Eigen::Dynamic, 1> p(numberNeurons); 
         for (int k = 0; k < numberNeurons; ++k) {
             p[k] = custom_cast<matrix_type>(p_std[k]); 
         }

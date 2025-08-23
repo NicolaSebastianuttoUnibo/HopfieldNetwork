@@ -5,7 +5,8 @@
 #include <algorithm>
 #include <cmath>
 
-
+template <typename T> 
+auto POINTS =   MD::getMathematicalVertex<T>();
 
 //private function
 
@@ -106,7 +107,7 @@ const std::vector<neurons_type> HN::HopfieldNetwork<neurons_type, matrix_type>::
 
      double min_dist_sq = std::numeric_limits<double>::max();
      
-    for (const auto& candidate_point : POINTS) {
+    for (const auto& candidate_point : POINTS<neurons_type>) {
      double dist_sq = std::norm(sum - custom_cast<matrix_type>(candidate_point));
 
 
@@ -155,7 +156,7 @@ count++;
 
      double min_dist_sq = std::numeric_limits<double>::max();
      
-    for (const auto& candidate_point : POINTS) {
+    for (const auto& candidate_point : POINTS<neurons_type>) {
      double dist_sq = std::norm(sum - custom_cast<matrix_type>(candidate_point));
 
 
