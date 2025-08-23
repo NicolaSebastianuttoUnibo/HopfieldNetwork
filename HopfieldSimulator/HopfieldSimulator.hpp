@@ -20,8 +20,8 @@ template <typename neurons_type = int8_t, typename matrix_type = double>
 
     std::vector<std::unique_ptr<CSP::CoherenceSetPattern<neurons_type>>> patterns_;
   HN::HopfieldNetwork<neurons_type,matrix_type> hn_;
-  mutable std::recursive_mutex mtx_;
-  
+  std::mutex mtx_; 
+  void regrid_impl(size_t numColumns, size_t numRows);
 public:
   HopfieldSimulator() = default;
   

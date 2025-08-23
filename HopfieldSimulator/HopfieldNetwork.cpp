@@ -169,13 +169,17 @@ count++;
  }////for POINTS
 
 
- auto vec1= std::conj(std::conj(getVector[i]));
- auto vec2= std::conj(best_point);
-    auto diff=  vec2-std::conj(vec1);
-    matrix_type lf=localField(i,getVector);
-    auto lf_c=std::conj(std::conj(lf));
-    float delta=-0.5f*(std::real(diff)*std::real(lf_c)-std::imag(diff)*std::imag(lf_c));
-   getEnergy.push_back(delta+getEnergy.back());
+
+
+auto local_field = localField(i, getVector);
+
+auto diff = best_point - getVector[i];
+auto conjugated_diff = std::conj(diff);
+
+float delta = -0.5f * (std::real(conjugated_diff) * std::real(local_field) -
+                       std::imag(conjugated_diff) * std::imag(local_field));
+
+    getEnergy.push_back(delta+getEnergy.back());
   getVector[i]=best_point;
 
    if (status) {

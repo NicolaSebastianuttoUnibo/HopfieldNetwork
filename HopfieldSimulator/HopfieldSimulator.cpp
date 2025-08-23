@@ -8,6 +8,15 @@
 #include <string>
 #include <iostream>
 
+///private function
+//regrid_impl()
+template <typename neurons_type, typename matrix_type> 
+void HS::HopfieldSimulator<neurons_type,matrix_type>::regrid_impl(size_t numColumns, size_t numRows) {
+  for(auto &element : patterns_){
+    element->regrid(numColumns,  numRows);
+  }
+}
+
 
 //public function
 ///getPatterns()
@@ -38,8 +47,7 @@ void HS::HopfieldSimulator<neurons_type, matrix_type>::clear(const int index){
 template <typename neurons_type, typename matrix_type> 
 
 void HS::HopfieldSimulator<neurons_type,matrix_type>::corruptPattern(const size_t index, const float noise) {
-  std::lock_guard<std::recursive_mutex> lock(mtx_);
- 
+ std::lock_guard<std::mutex> lock(mtx_);
   patterns_[index]->reCorrupt(noise);
 }
 
@@ -61,7 +69,7 @@ void HS::HopfieldSimulator<neurons_type, matrix_type>::emplace_pattern(const flo
 ///flipPixelOnPattern()
 template <typename neurons_type, typename matrix_type> 
 void HS::HopfieldSimulator<neurons_type,matrix_type>::flipPixelOnPattern(const size_t index, const size_t pos) {
-   std::lock_guard<std::recursive_mutex> lock(mtx_);
+ std::lock_guard<std::mutex> lock(mtx_);
 
  patterns_[index]->flipNoisyPixel(pos);
 
@@ -78,17 +86,14 @@ template <typename neurons_type, typename matrix_type>
 template <typename neurons_type, typename matrix_type> 
 void HS::HopfieldSimulator<neurons_type,matrix_type>::regrid(size_t numColumns, size_t numRows) {
 
-  std::lock_guard<std::recursive_mutex> lock(mtx_);
-
-for(auto &element : patterns_){
-  element->regrid(numColumns,  numRows);
-}
+ std::lock_guard<std::mutex> lock(mtx_);
+  regrid_impl(numColumns, numRows);
 }
 
 ///removePattern()
 template <typename neurons_type, typename matrix_type> 
 void HS::HopfieldSimulator<neurons_type,matrix_type>::removePattern(const size_t index) {
-  std::lock_guard<std::recursive_mutex> lock(mtx_);
+ std::lock_guard<std::mutex> lock(mtx_);
 
 
   if (index < patterns_.size()) {
@@ -104,7 +109,7 @@ void HS::HopfieldSimulator<neurons_type,matrix_type>::removePattern(const size_t
 ///resolvePattern()
 template <typename neurons_type, typename matrix_type> 
   void HS::HopfieldSimulator<neurons_type,matrix_type>::resolvePattern(const int index, std::atomic<float>* status) {
-  std::lock_guard<std::recursive_mutex> lock(mtx_);
+ std::lock_guard<std::mutex> lock(mtx_);
   
     
     if(patterns_.size()==0){
@@ -166,7 +171,7 @@ return;}
   ///setTraining()
 template <typename neurons_type, typename matrix_type> 
   void HS::HopfieldSimulator<neurons_type,matrix_type>::setTraining(const int numColumns, const int numRows, std::vector<matrix_type>& matrix ){
-  std::lock_guard<std::recursive_mutex> lock(mtx_);
+ std::lock_guard<std::mutex> lock(mtx_);
 
 
     const int dim=std::sqrt(matrix.size());
@@ -174,13 +179,13 @@ template <typename neurons_type, typename matrix_type>
        throw std::logic_error("Dimensione non compatibile");
     }
 hn_.setTraining(matrix);
-regrid(numColumns,numRows);
+regrid_impl(numColumns,numRows);
   }
 
 ///trainNetworkHebb()
 template <typename neurons_type, typename matrix_type> 
   void HS::HopfieldSimulator<neurons_type,matrix_type>::trainNetworkHebb(std::atomic<float>* status){
-  std::lock_guard<std::recursive_mutex> lock(mtx_);
+ std::lock_guard<std::mutex> lock(mtx_);
    
     auto function = [](const std::unique_ptr<CSP::CoherenceSetPattern<neurons_type>>& csp_ptr){
        
@@ -196,7 +201,7 @@ template <typename neurons_type, typename matrix_type>
 ///trainNetworkWithPseudoinverse()
 template <typename neurons_type, typename matrix_type> 
   void HS::HopfieldSimulator<neurons_type,matrix_type>::trainNetworkWithPseudoinverse(std::atomic<float>* status){
-  std::lock_guard<std::recursive_mutex> lock(mtx_);
+ std::lock_guard<std::mutex> lock(mtx_);
   
     auto function = [](const std::unique_ptr<CSP::CoherenceSetPattern<neurons_type>>& csp_ptr){
        

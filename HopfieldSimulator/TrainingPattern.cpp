@@ -146,7 +146,7 @@ return;
             long long C3 = imgIntegral_[end_y * integral_width + start_x];        
             long long C4 = imgIntegral_[end_y * integral_width + end_x];   
             long long total_luminance = C4 - C2 - C3 + C1;
-            int pixel_count = (end_x - start_x) * (end_y - start_y);
+            int pixel_count = (end_x - start_x) * (end_y - start_y); 
 
     
 
@@ -155,7 +155,7 @@ return;
         average_luminance = static_cast<float>(total_luminance) / pixel_count;
       }
 
-      const int N=(POINTS.size()-1)*average_luminance/maxLum;
+      const float N=(POINTS.size()-1.0f)*(average_luminance)/maxLum+1.0f/POINTS.size();
     pattern_.push_back(POINTS[N]);
 
       

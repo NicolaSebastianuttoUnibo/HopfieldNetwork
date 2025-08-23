@@ -16,10 +16,10 @@
 
 
 int main(int, char **) {
-    // using neurons_type = int8_t;
-    // using matrix_type = double;
-    using neurons_type = std::complex<int8_t>;
-    using matrix_type = std::complex<double>;
+    using neurons_type = int8_t;
+    using matrix_type = double;
+    // using neurons_type = std::complex<int8_t>;
+    // using matrix_type = std::complex<double>;
   try {
 
     /********************INIZIO ELENCO VARIABILI********************/
