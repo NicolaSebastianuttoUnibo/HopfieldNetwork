@@ -79,7 +79,6 @@ void TP::ImageTrainingPattern<T>::regrid(const std::size_t numColumns, const std
     }
     if (!imgData_) {
 throw std::invalid_argument("Image Data not found");
-return;
     }
 
 

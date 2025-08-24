@@ -12,10 +12,11 @@ GraphicsManager::GraphicsManager() { initialize(); }
 GraphicsManager::~GraphicsManager() { shutdown(); }
 
 void GraphicsManager::initialize() {
+  ///check if this function initialize() has been called
   if (isInitialized_) {
     return;
   }
-
+///tries to initialize the video, timer, and game controller subsystems
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) !=
       0) {
     throw std::runtime_error(std::string("Errore SDL: ") + SDL_GetError());
@@ -27,8 +28,9 @@ void GraphicsManager::initialize() {
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 
-  // --- Creazione Finestra SDL e Contesto OpenGL ---
-  window_ = SDL_CreateWindow("Rete di Hopfield", SDL_WINDOWPOS_CENTERED,
+
+///creazione della finestra
+  window_ = SDL_CreateWindow("Hopfield Network", SDL_WINDOWPOS_CENTERED,
                              SDL_WINDOWPOS_CENTERED, 1280, 720,
                              SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
   if (!window_) {
@@ -41,48 +43,44 @@ void GraphicsManager::initialize() {
     throw std::runtime_error(std::string("Errore SDL_GL_CreateContext: ") +
                              SDL_GetError());
   }
-  SDL_GL_MakeCurrent(window_, glContext_);
-  SDL_GL_SetSwapInterval(1); // Abilita VSync
 
-  // --- Inizializzazione Dear ImGui ---
+  //collegamento tra window e glContext
+  SDL_GL_MakeCurrent(window_, glContext_);
+  SDL_GL_SetSwapInterval(1); // Abilita VSync (vengono letti gli Hz del computer)
+
+  //Dear ImGui
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   io_ = &ImGui::GetIO();
   io_->ConfigFlags |=
-      ImGuiConfigFlags_NavEnableKeyboard; // Abilita controllo da tastiera
-  io_->ConfigFlags |=
-      ImGuiConfigFlags_NavEnableGamepad; // Abilita controllo da gamepad
+      ImGuiConfigFlags_NavEnableKeyboard;
 
   ImGui::StyleColorsDark();
 
-  // --- Inizializzazione Backend ImGui ---
   ImGui_ImplSDL2_InitForOpenGL(window_, glContext_);
   ImGui_ImplOpenGL3_Init(glsl_version);
 
   isInitialized_ = true;
 }
-// ... (costruttore, distruttore, initialize, shutdown rimangono uguali)
+
+
 
 bool GraphicsManager::beginFrame(std::vector<std::atomic<float> *> kill) {
   if (!isInitialized_) {
-    return false; // Non può iniziare un frame se non inizializzato
+    return false;
   }
 
-  // Gestione degli eventi SDL
   SDL_Event event;
   while (SDL_PollEvent(&event)) {
     ImGui_ImplSDL2_ProcessEvent(&event);
-    if (event.type == SDL_QUIT) {
-      return false; // Segnala al main loop di terminare
-    }
-    if (event.type == SDL_WINDOWEVENT &&
+
+    if ((event.type == SDL_WINDOWEVENT &&
         event.window.event == SDL_WINDOWEVENT_CLOSE &&
-        event.window.windowID == SDL_GetWindowID(window_)) {
+        event.window.windowID == SDL_GetWindowID(window_))||event.type == SDL_QUIT) {
       for (auto &k : kill) {
         *k = -1.0f;
       }
-
-      return false; // Segnala al main loop di terminare
+      return false;
     }
   }
 
@@ -91,7 +89,7 @@ bool GraphicsManager::beginFrame(std::vector<std::atomic<float> *> kill) {
   ImGui_ImplSDL2_NewFrame();
   ImGui::NewFrame();
 
-  return true; // Continua il frame
+  return true; 
 }
 
 void GraphicsManager::endFrame() {

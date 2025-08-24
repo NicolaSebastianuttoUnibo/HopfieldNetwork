@@ -36,7 +36,7 @@
               onSuccess(filePath);
             }
           } catch (const std::exception &e) {
-            throw std::logic_error("Errore nel carcicare " + filePath + ": " +
+            throw std::logic_error("Error on loading " + filePath + ": " +
                                    std::string(e.what()));
           }
         }

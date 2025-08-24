@@ -72,15 +72,15 @@ void HN::HopfieldNetwork<neurons_type, matrix_type>::trainNetworkWithHebb(const 
 
     for (const auto& pattern_container : patterns) {
 
-if (status && status->load(std::memory_order_relaxed) < 0.0f) {
-            return;
-        }
 
 
             Eigen::Matrix<matrix_type, Eigen::Dynamic, 1> p(numberNeurons); 
 
         const auto& p_std = extractor(pattern_container);
         for (int k = 0; k < numberNeurons; ++k) {
+            if (status && status->load(std::memory_order_acquire) < 0.0f) {
+            return;
+        }
             p[k] = custom_cast<matrix_type>(p_std[k]); 
         }
 
@@ -140,7 +140,7 @@ void HN::HopfieldNetwork<neurons_type, matrix_type>::trainNetworkWithPseudoinver
     W_ij.resize(numNeurons, numNeurons); 
 
     for (size_t i = 0; i < numNeurons; ++i) {
-          if (status && status->load(std::memory_order_relaxed) < 0.0f) {
+          if (status && status->load(std::memory_order_acquire) < 0.0f) {
             return;
         }
 

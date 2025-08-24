@@ -239,10 +239,10 @@ int main(int, char **) {
          * status***************************/
         ImGui::SameLine();
         if (ImGui::Button("Stop!")) {
-          statusTrain.store(-1.0f, std::memory_order_relaxed);
+          statusTrain.store(-1.0f, std::memory_order_release);
         }
         ImGui::SameLine();
-        ImGui::Text("Caricamento: %.1f/100.0", 100.0f * statusTrain.load(std::memory_order_relaxed));
+        ImGui::Text("Caricamento: %.1f/100.0", 100.0f * statusTrain.load(std::memory_order_acquire));
 
         /************fine sezione training****************/
         /****************inizio sezione avanti e indietro**************/
@@ -341,7 +341,7 @@ int main(int, char **) {
           ImGui::BeginDisabled(!trained || is_operation_in_progress);
           {
             if (ImGui::Button("Evolvi")) {
-             statusEvolve.store(-1.0f, std::memory_order_relaxed); // hs.resolvePattern(index);
+             statusEvolve.store(0.0f, std::memory_order_relaxed); // hs.resolvePattern(index);
               thread = std::async(std::launch::async, [&]() {
                 // Questa è una lambda che verrà eseguita nel nuovo thread
                 hs.resolvePattern(index, &statusEvolve);
@@ -351,11 +351,11 @@ int main(int, char **) {
           ImGui::EndDisabled();
 
           ImGui::SameLine();
-          ImGui::Text("Caricamento: %.1f/100.0", 100.0f * statusEvolve.load(std::memory_order_relaxed));
+          ImGui::Text("Caricamento: %.1f/100.0", 100.0f * statusEvolve.load(std::memory_order_acquire));
           ImGui::SameLine();
 
           if (ImGui::Button("Stop")) {
-statusEvolve.store(-1.0f, std::memory_order_relaxed);
+statusEvolve.store(-1.0f, std::memory_order_release);
           }
           ImGui::Text("Pattern pixelato evoluzione:");
           const std::vector<neurons_type> &evolving_data =

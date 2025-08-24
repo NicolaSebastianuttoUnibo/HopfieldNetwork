@@ -4,6 +4,8 @@
 #include <map>
 
 #include "../imgui/imgui.h"
+template <typename T>
+auto POINTS = MD::getMathematicalVertex<T>();
 
 template <typename T, typename M>
 void Comp<T,M>::drawGrid(const std::vector<T> &data, int cols, int rows,
@@ -44,11 +46,11 @@ void Comp<T,M>::drawGrid(const std::vector<T> &data, int cols, int rows,
       float x1 = x0 + cell_size_x;
       float y1 = y0 + cell_size_y;
 
- auto it = std::find(POINTS.begin(), POINTS.end(), data[index]);
-    if (it == POINTS.end()) {
+ auto it = std::find(POINTS<T>.begin(), POINTS<T>.end(), data[index]);
+    if (it == POINTS<T>.end()) {
         throw std::invalid_argument("Current pixel value is not found in POINTS set.");
     }
-int color=50+200*std::distance(POINTS.begin(), it)/POINTS.size();
+int color=50+200*std::distance(POINTS<T>.begin(), it)/POINTS<T>.size();
 const ImU32 COLOR_BLACK = IM_COL32(color, color, color, 255);
       ImU32 cell_color =COLOR_BLACK;
       draw_list->AddRectFilled(ImVec2(x0, y0), ImVec2(x1, y1), cell_color);

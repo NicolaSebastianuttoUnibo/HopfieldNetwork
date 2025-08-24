@@ -58,7 +58,6 @@ public:
 template <typename T = int8_t,typename M = double >
 
 struct Comp {
-   static constexpr std::array<T, static_cast<unsigned int>(std::pow(2,MD::getMathematicalDimension<T>()))> POINTS = MD::getMathematicalVertex<T>();
 
   void drawGrid(const std::vector<T> &data, int cols, int rows,
                 const char *id_grid,
