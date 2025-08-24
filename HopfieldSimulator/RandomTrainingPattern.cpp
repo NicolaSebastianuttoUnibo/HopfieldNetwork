@@ -25,9 +25,11 @@ static std::uniform_int_distribution<int> integer(0, static_cast<int>(POINTS<T>.
 auto& generator = RU::getRandomGenerator();
 
      for (size_t i=0;i<N;i++) {
+        if (real(generator) < randomDensity) {
              int random_index = integer(generator);
              this->pattern_.push_back( POINTS<T>[random_index]);
-     
+        }
+        else{this->pattern_.push_back( POINTS<T>[0]);}
 
 
 }

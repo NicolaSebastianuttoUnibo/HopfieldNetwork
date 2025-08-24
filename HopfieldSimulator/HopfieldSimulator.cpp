@@ -54,13 +54,29 @@ void HS::HopfieldSimulator<neurons_type,matrix_type>::corruptPattern(const size_
 ///emplace_pattern()
 template<typename neurons_type, typename matrix_type>
 void HS::HopfieldSimulator<neurons_type, matrix_type>::emplace_pattern(const std::string& path, const int a, const int b) {
-    patterns_.emplace_back(std::make_unique<CSP::CoherenceSetPattern<neurons_type>>(path,  a,  b));
+    
+  if(patterns_.size()>0){
+    if(!patterns_[0]->hasTheseDimensions(a,b)){
+  throw std::runtime_error("Dimensions are incompatible; you have to regrid!");
+
+    }
+  }
+  
+  patterns_.emplace_back(std::make_unique<CSP::CoherenceSetPattern<neurons_type>>(path,  a,  b));
   
   }
   
 template<typename neurons_type, typename matrix_type>
 void HS::HopfieldSimulator<neurons_type, matrix_type>::emplace_pattern(const float noise, const int a, const int b) {
-    patterns_.emplace_back(std::make_unique<CSP::CoherenceSetPattern<neurons_type>>(noise,  a,  b));
+     if(patterns_.size()>0){
+    if(!patterns_[0]->hasTheseDimensions(a,b)){
+  throw std::runtime_error("Dimensions are incompatible; you have to regrid!");
+
+    }
+  }
+  
+  
+  patterns_.emplace_back(std::make_unique<CSP::CoherenceSetPattern<neurons_type>>(noise,  a,  b));
   
   }
 

@@ -59,6 +59,12 @@ template <typename T>
    
   }
 
+///hasTheseDimensions()
+template <typename T> 
+  bool CSP::CoherenceSetPattern<T>::hasTheseDimensions(const size_t col, const size_t row)const{
+    return col==cols_&&row==rows_;
+  }
+
 ///flipNoisyPixel()
 template <typename T> 
   void CSP::CoherenceSetPattern<T>::flipNoisyPixel(std::size_t pos){

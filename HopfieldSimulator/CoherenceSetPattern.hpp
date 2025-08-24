@@ -48,6 +48,7 @@ public:
    size_t getCol() const noexcept;
 
   bool hasSameDimensionOf(CoherenceSetPattern& anotherCoherenceSetPattern)const;
+  bool hasTheseDimensions(const size_t col, const size_t row)const;
 
 
   void flipNoisyPixel(std::size_t pos);
