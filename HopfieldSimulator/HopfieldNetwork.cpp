@@ -182,6 +182,9 @@ float delta = -0.5f * (std::real(conjugated_diff) * std::real(local_field) -
   getVector[i]=best_point;
 
    if (status) {
+        if (status->load(std::memory_order_acquire) < 0.0f) {
+            return;
+        }
             status->store(static_cast<float>(i + 1) / num_neurons, std::memory_order_relaxed);
         }
 

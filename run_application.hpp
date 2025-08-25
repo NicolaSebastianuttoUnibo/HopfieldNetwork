@@ -1,0 +1,393 @@
+#include "GraphicsManager/GraphicsManager.hpp"
+#include "HopfieldSimulator/CoherenceSetPattern.hpp"
+#include "HopfieldSimulator/HopfieldNetwork.hpp"
+#include "HopfieldSimulator/HopfieldSimulator.hpp"
+#include "ImGuiFileDialog/ImGuiFileDialog.h"
+#include <atomic>
+#include <chrono>
+#include <functional>
+#include <future>
+#include <iomanip>
+#include <iostream>
+#include <stdexcept>
+#include <string>
+#include <complex>
+
+template <typename neurons_type, typename matrix_type> 
+int run_application(int, char **) {
+    // using neurons_type = int8_t;
+    // using matrix_type = double;
+    // // using neurons_type = std::complex<int8_t>;
+    // // using matrix_type = std::complex<double>;
+  try {
+
+    /********************INIZIO ELENCO VARIABILI********************/
+
+    GraphicsManager graphics; // gestisce le librerie grafiche di IMGUI e SDL
+    Comp<neurons_type, matrix_type> comp; // permette di creare griglie, grafici in modo semplice
+    HS::HopfieldSimulator<neurons_type, matrix_type>
+        hs;        // l'oggetto con cui possiamo personalizzare il nostro stato
+    int pixel = 8; // i numeri di pixel che deve avere la classe
+    int pixel_slider = 8; // i pixel indicati dallo slider
+    float noise = 0.1f;  // il rumore che sarà generato dal pulsante "Corrompi"
+    size_t index = 0;    // indice del pattern da visualizzare
+    bool running = true; // sta dicendo se il programma sta andando
+    bool is_operation_in_progress =
+        false; // se true evita che che l'utente prema un altro pulsante che
+               // richiede tanta computazione
+    bool hebb = true;     // booleano per scegliere il tipo di training
+    bool trained = false;     // verifica se i pattern sono stati trainati 
+    bool showWindow = true;   // mi dice se mi mostra la schermata iniziale
+    std::future<void> thread; // mi lancia in parallelo le operazioni complesse
+    static char pathBuffer[256] =
+        "trainings/nomeRete"; // nome di default per il
+                                             // salvataggio dei file dei
+                                             // trainings
+    std::atomic<float>   statusTrain =
+        0.0f; // mi indica la percentuale di caricamento del training
+    std::atomic<float>   statusEvolve =
+        0.0f; // mi indica la percentuale di caricamento dell'evolve
+    std::vector<std::atomic<float> *> kill = {
+        &statusTrain, &statusEvolve}; // puntatori agli stati in modo tal
+    // e che il programma è in grado di accederli, e interrompere processi
+    // costosi
+
+    /// primo FileDialog
+    FileDialogHelper fdh{"firstDialog", "Open Image(s)",
+                         ".png,.jpg,.jpeg,.bmp,.gif",
+                         25}; // file dialog per aprire immagini
+    fdh.onSuccess = [&](const std::string &filePath) {
+      hs.emplace_pattern(filePath, pixel,
+          pixel);
+      
+    };
+    fdh.onDialogClose = [&] {
+      showWindow = true;
+    }; // quando chiudo il dialogo, voglio che si veda la finestra principale
+
+    /// primo FileDialog
+    FileDialogHelper fdh2{"seccondDialog", "Open Training", ".training",
+                          1}; // file dialog per aprire un training
+    fdh2.onSuccess = [&](const std::string &filePath) {
+      ////un file training ha due due interi che rappresentano le due dimensioni
+      ///(larghezza e altezza) dei pattern che sa risolvere e la matrice dei
+      /// pesi
+      int numRows = 0;
+      int numColumns = 0;
+      std::vector<matrix_type> matrix;
+
+      // funzione che mi restituisce i dati
+      comp.setElementsByFile(filePath, &numRows, &numColumns, &matrix);
+      if (numRows != numColumns) {
+        /// il main è costruito per essere quadrato
+        throw std::runtime_error("Le dimensioni della matrice non valida: il "
+                                 "training deve essere di pattern quadrati");
+      }
+
+      pixel = numRows;                             // assegno il dato ottenuto
+      hs.setTraining(numRows, numColumns, matrix); // assegno il training
+      trained = true; // affermo che è stato trainato
+    };
+    fdh2.onDialogClose = [&] {
+      showWindow = true;
+    }; // quando chiudo il dialogo, voglio che si veda la finestra principale
+
+    /*********FINE ELENCO VARIABILI***************/
+
+    while (running) {
+
+      // gestisce l'inizio del frame e controlla se deve uccidere un thread
+      running = graphics.beginFrame(kill);
+
+      if (running) {
+
+        // gestione di thread
+        if (is_operation_in_progress) {
+          if (thread.valid() && thread.wait_for(std::chrono::seconds(0)) ==
+                                    std::future_status::ready) {
+            thread.get();
+            is_operation_in_progress = false;
+            statusTrain = 1.0f;
+            statusEvolve = 1.0f;
+          }
+        }
+        // configura le grafiche
+        graphics.config();
+        ImGui::SetNextWindowCollapsed(!showWindow, ImGuiCond_Always);
+
+        /****************INIZIO DELLA CREAZIONE DELLA FINESTRA****************/
+        /*************inizio parametri  controllabili***********/
+
+        ImGui::Begin("Rete di Hopfield");
+
+        ImGui::Text("Controllo rete di Hopfield");
+        ImGui::Text("Parametri:");
+        ImGui::BeginDisabled(is_operation_in_progress);
+        if (ImGui::SliderInt("Pixel Per Row", &pixel_slider, 2, 64)) {
+
+          if (hs.size() < 9) {
+            pixel = pixel_slider;
+            trained = false;
+            hs.regrid(pixel, pixel);
+          }
+        }
+        ImGui::EndDisabled();
+
+        if (hs.size() > 8) {
+          ImGui::BeginDisabled(is_operation_in_progress);
+          {
+            if (ImGui::Button("Applica Grid")) {
+              pixel = pixel_slider;
+              trained = false;
+              hs.regrid(pixel, pixel);
+            }
+          }
+          ImGui::EndDisabled();
+        }
+
+        ImGui::SliderFloat("Noise", &noise, 0.0f, 1.0f);
+        ImGui::Separator();
+        /************fine parametri controllabili****************/
+        /*pulsante per aprire immaggini*******************/
+        ImGui::BeginDisabled(is_operation_in_progress);
+        {
+          if (ImGui::Button("Open Images")) {
+            showWindow = false;
+            fdh.open();
+          }
+          fdh.render();
+        }
+        if (ImGui::Button("Generate Images")) {
+            hs.generatePattern(noise, pixel, pixel);
+            index=hs.size()>0?hs.size()-1:0;
+            
+          }
+        ImGui::EndDisabled();
+
+        ImGui::Separator();
+        /***************inzio sezione training**********/
+        /*pulsante per trainare la  rete*************/
+        ImGui::BeginDisabled(is_operation_in_progress);
+        if (ImGui::Button(hebb?"Hebb":"Pseudoinverse")){hebb=!hebb;}
+        ImGui::EndDisabled();
+
+        ImGui::SameLine();
+        ImGui::BeginDisabled(is_operation_in_progress);
+        {
+          if (ImGui::Button("Train Hopfield Network")) {
+            trained = true;
+            is_operation_in_progress = true; // Imposta lo stato a "in corso"
+           statusTrain.store(0.0f, std::memory_order_relaxed);              // Resetta la barra di progresso
+
+            // Avvia trainNetwork in un thread separato usando std::async
+            thread = std::async(std::launch::async, [&]() {
+              // Questa è una lambda che verrà eseguita nel nuovo thread
+              if(hebb){hs.trainNetworkHebb(&statusTrain);}
+              else{hs.trainNetworkWithPseudoinverse(&statusTrain);}
+            });
+          }
+        }
+        ImGui::EndDisabled();
+        ImGui::SameLine();
+
+        /*pulsante per salvare la rete**************************/
+        ImGui::BeginDisabled(is_operation_in_progress);
+
+        if (ImGui::Button("Save Trained Network")) {
+          ImGui::OpenPopup("Save Dialog");
+        }
+        ImGui::EndDisabled();
+
+        if (ImGui::BeginPopupModal("Save Dialog", NULL,
+                                   ImGuiWindowFlags_AlwaysAutoResize)) {
+
+          ImGui::Text("Salva la rete Hopfield addestrata.\nSpecifica il "
+                      "percorso di salvataggio (senza estensione).\n");
+          ImGui::Separator();
+
+          ImGui::InputText("Percorso di salvataggio", pathBuffer,
+                           sizeof(pathBuffer));
+          ImGui::Spacing();
+
+          if (ImGui::Button("Save", ImVec2(120, 0))) {
+             hs.saveFileTraining(pathBuffer);
+             ImGui::CloseCurrentPopup();
+          }
+
+          ImGui::SetItemDefaultFocus();
+          ImGui::SameLine();
+
+          if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+            ImGui::CloseCurrentPopup();
+          }
+
+          ImGui::EndPopup();
+        }
+        /*pulsante per caricare una rete************************/
+        ImGui::SameLine();
+        ImGui::BeginDisabled(is_operation_in_progress);
+        {
+          if (ImGui::Button("Open Training")) {
+            showWindow = false;
+            fdh2.open();
+          }
+          fdh2.render();
+        }
+        ImGui::EndDisabled();
+        /*pulsante per fermare una rete e il suo
+         * status***************************/
+        ImGui::SameLine();
+        if (ImGui::Button("Stop!")) {
+          statusTrain.store(-1.0f, std::memory_order_release);
+        }
+        ImGui::SameLine();
+        ImGui::Text("Caricamento: %.1f/100.0", 100.0f * statusTrain.load(std::memory_order_acquire));
+
+        /************fine sezione training****************/
+        /****************inizio sezione avanti e indietro**************/
+
+        ImGui::Separator();
+        if (hs.size() > 0) {
+
+          ImGui::Text("Stai guardando il %ld° pattern", index + 1);
+
+          if (ImGui::Button("<")) {
+            if (index > 0) {
+              hs.clear(index);
+
+              index--;
+            }
+            ImGui::End();
+            graphics.endFrame();
+
+            continue;
+          }
+          ImGui::SameLine();
+          if (ImGui::Button(">")) {
+            if (index < hs.size() - 1) {
+              hs.clear(index);
+              index++;
+            }
+            ImGui::End();
+            graphics.endFrame();
+
+            continue;
+          }
+
+          /*check sulla dimensione*/
+          ImGui::BeginDisabled(is_operation_in_progress);
+          if (ImGui::Button("Verifica dimensioni")) {
+          trained=hs.checkDimension();
+          }
+            ImGui::EndDisabled();
+
+                    ImGui::Separator();
+
+          /****************fine sezione avanti e indietro***********/
+          /*****************inizio disegno dei tre pattern******************/
+          /*pattern originale************/
+
+          ImGui::BeginGroup();
+          ImGui::BeginDisabled(is_operation_in_progress);
+          if (ImGui::Button("Elimina")) {
+            hs.removePattern(index);
+            if (hs.size() == 0) {
+              index = -1;
+            } else if (index > 0) {
+              index--;
+            }
+            index = 0;
+            ImGui::EndGroup();
+            ImGui::EndDisabled();
+            ImGui::End();
+            graphics.endFrame();
+
+            continue;
+          }
+          ImGui::EndDisabled();
+
+          const auto &current_pattern_container = hs.getPatterns()[index];
+          ImGui::Text("Pattern pixelato originale:");
+          const std::vector<neurons_type> &training_data =
+              current_pattern_container->getTrainingPatternVector();
+          comp.drawGrid(training_data, pixel, pixel, "training_pattern");
+          ImGui::EndGroup();
+          /*pattern corrotto********************************/
+
+          ImGui::SameLine();
+          ImGui::BeginDisabled(is_operation_in_progress);
+          ImGui::BeginGroup();
+          if (ImGui::Button("Corrompi")) {
+            hs.corruptPattern(index, noise);
+          }
+          ImGui::EndDisabled();
+
+          ImGui::Text("Pattern pixelato corrotto:");
+          const std::vector<neurons_type> &noisy_data =
+              current_pattern_container->getNoisyPatternVector();
+
+          comp.drawGrid(noisy_data, pixel, pixel, "noisy_pattern",
+                        [&](int hovered_index) {
+                          hs.cyclePixelStateOnPattern(index, hovered_index);
+                        });
+          ImGui::EndGroup();
+
+          ImGui::SameLine();
+          /*pattern evoluzone********************************/
+
+          ImGui::BeginGroup();
+
+          ImGui::BeginDisabled(!trained || is_operation_in_progress);
+          {
+            if (ImGui::Button("Evolvi")) {
+             statusEvolve.store(0.0f, std::memory_order_relaxed); // hs.resolvePattern(index);
+              thread = std::async(std::launch::async, [&]() {
+                // Questa è una lambda che verrà eseguita nel nuovo thread
+                hs.resolvePattern(index, &statusEvolve);
+              });
+            }
+          }
+          ImGui::EndDisabled();
+
+          ImGui::SameLine();
+          ImGui::Text("Caricamento: %.1f/100.0", 100.0f * statusEvolve.load(std::memory_order_acquire));
+          ImGui::SameLine();
+
+          if (ImGui::Button("Stop")) {
+statusEvolve.store(-1.0f, std::memory_order_release);
+          }
+          ImGui::Text("Pattern pixelato evoluzione:");
+          const std::vector<neurons_type> &evolving_data =
+              current_pattern_container->getEvolvingPatternVector();
+
+          comp.drawGrid(evolving_data, pixel, pixel, "evolving_pattern");
+          ImGui::EndGroup();
+
+          ImGui::SameLine();
+
+          /*inizio disegno del plot energia ************************/
+
+          ImGui::BeginGroup();
+          const std::vector<float> &energy =
+              current_pattern_container->getEnergy();
+          comp.drawPlot(energy);
+
+          ImGui::EndGroup();
+        }
+        // /*****************fine disegno dei tre pattern+energia*************/
+        // /***************FINE DELLA CREAZIONE DELLA FINESTRA******************/
+
+        ImGui::End();
+      }
+
+      graphics.endFrame();
+    }
+
+  } catch (const std::runtime_error &e) {
+    throw std::logic_error("Errore critico: " + std::string(e.what()));
+
+    return 1;
+  }
+
+  return 0;
+}

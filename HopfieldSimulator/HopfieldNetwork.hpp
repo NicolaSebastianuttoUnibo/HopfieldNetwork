@@ -72,15 +72,13 @@ void HN::HopfieldNetwork<neurons_type, matrix_type>::trainNetworkWithHebb(const 
 
     for (const auto& pattern_container : patterns) {
 
-
+       
 
             Eigen::Matrix<matrix_type, Eigen::Dynamic, 1> p(numberNeurons); 
 
         const auto& p_std = extractor(pattern_container);
         for (int k = 0; k < numberNeurons; ++k) {
-            if (status && status->load(std::memory_order_acquire) < 0.0f) {
-            return;
-        }
+
             p[k] = custom_cast<matrix_type>(p_std[k]); 
         }
 
@@ -88,6 +86,11 @@ void HN::HopfieldNetwork<neurons_type, matrix_type>::trainNetworkWithHebb(const 
 
    
  if(status){
+     if (status->load(std::memory_order_acquire) < 0.0f) {
+            return;
+        }
+
+
             count++;
             status->store(static_cast<float>(count) / totalIteration, std::memory_order_relaxed);
         }
@@ -140,23 +143,24 @@ void HN::HopfieldNetwork<neurons_type, matrix_type>::trainNetworkWithPseudoinver
     W_ij.resize(numNeurons, numNeurons); 
 
     for (size_t i = 0; i < numNeurons; ++i) {
-          if (status && status->load(std::memory_order_acquire) < 0.0f) {
-            return;
-        }
+    
 
         W_ij.row(i) = T.row(i) * X_H; 
         
   if (status) {
+      if (status->load(std::memory_order_acquire) < 0.0f) {
+            return;
+        }
             status->store(static_cast<float>(i) / numNeurons, std::memory_order_relaxed);
         }
 
+   
 
-    }
     
     
 }
 
-
+}
 
 template class HopfieldNetwork<int8_t,float>;
 template class HopfieldNetwork<int8_t,double>;

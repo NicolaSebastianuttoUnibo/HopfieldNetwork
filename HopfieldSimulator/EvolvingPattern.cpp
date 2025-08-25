@@ -16,7 +16,7 @@ template <typename T>
     return pattern_; 
   }
 ///getPattern()
-
+ 
 template <typename T> 
 
    std::vector<T>& EP::EvolvingPattern<T>::getPattern() noexcept {
