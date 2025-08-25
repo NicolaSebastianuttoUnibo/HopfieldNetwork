@@ -39,11 +39,25 @@ set(GRAPHICS_AND_UI_SOURCES
     imgui/backends/imgui_impl_opengl3.cpp
 )
 
-# Libreria statica per la logica del simulatore
-add_library(hopfield_simulator STATIC ${SIMULATOR_CORE_SOURCES})
-target_include_directories(hopfield_simulator PUBLIC
+
+add_library(Eigen_Headers INTERFACE)
+
+
+target_include_directories(Eigen_Headers INTERFACE SYSTEM
     ${CMAKE_CURRENT_SOURCE_DIR}/eigen
 )
+
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(Eigen_Headers INTERFACE
+        -Wno-deprecated-copy
+    )
+endif()
+
+
+# Libreria statica per la logica del simulatore
+add_library(hopfield_simulator STATIC ${SIMULATOR_CORE_SOURCES})
+target_link_libraries(hopfield_simulator PUBLIC Eigen_Headers)
 
 # Trova i pacchetti necessari
 find_package(SDL2 REQUIRED)

@@ -4,13 +4,13 @@
 #include <map>
 
 #include "../imgui/imgui.h"
-template <typename T>
-auto POINTS = MD::getMathematicalVertex<T>();
+template <typename T> auto POINTS = MD::getMathematicalVertex<T>();
 
 template <typename T, typename M>
-void Comp<T,M>::drawGrid(const std::vector<T> &data, int cols, int rows,
-                       const char *id_grid,
-                       const std::function<void(int)> &function, float size) {
+void Comp<T, M>::drawGrid(const std::vector<T> &data, int cols, int rows,
+                          const char *id_grid,
+                          const std::function<void(int)> &function,
+                          float size) {
   ImGui::PushID(id_grid);
 
   bool clickable = static_cast<bool>(function);
@@ -31,8 +31,6 @@ void Comp<T,M>::drawGrid(const std::vector<T> &data, int cols, int rows,
   const float cell_size_x = canvas_sz.x / cols;
   const float cell_size_y = canvas_sz.y / rows;
 
-
-
   const ImU32 COLOR_HOVER = IM_COL32(100, 100, 255, 150);
 
   for (int row = 0; row < rows; ++row) {
@@ -46,13 +44,15 @@ void Comp<T,M>::drawGrid(const std::vector<T> &data, int cols, int rows,
       float x1 = x0 + cell_size_x;
       float y1 = y0 + cell_size_y;
 
- auto it = std::find(POINTS<T>.begin(), POINTS<T>.end(), data[index]);
-    if (it == POINTS<T>.end()) {
-        throw std::invalid_argument("Current pixel value is not found in POINTS set.");
-    }
-int color=50+200*std::distance(POINTS<T>.begin(), it)/POINTS<T>.size();
-const ImU32 COLOR_BLACK = IM_COL32(color, color, color, 255);
-      ImU32 cell_color =COLOR_BLACK;
+      auto it = std::find(POINTS<T>.begin(), POINTS<T>.end(), data[index]);
+      if (it == POINTS<T>.end()) {
+        throw std::invalid_argument(
+            "Current pixel value is not found in POINTS set.");
+      }
+      int color =
+          50 + 200 * std::distance(POINTS<T>.begin(), it) / POINTS<T>.size();
+      const ImU32 COLOR_BLACK = IM_COL32(color, color, color, 255);
+      ImU32 cell_color = COLOR_BLACK;
       draw_list->AddRectFilled(ImVec2(x0, y0), ImVec2(x1, y1), cell_color);
     }
   }
@@ -87,24 +87,18 @@ const ImU32 COLOR_BLACK = IM_COL32(color, color, color, 255);
   ImGui::PopID();
 }
 template <typename T, typename M>
- void Comp<T,M>::drawPlot(const std::vector<float> &array) {
+void Comp<T, M>::drawPlot(const std::vector<float> &array) {
 
-  // Se non ci sono dati, mostra un messaggio
   if (array.size() == 0) {
     ImGui::Text("Nessun dato di energia disponibile.");
   } else {
     ImGui::Text("Andamento dell'energia");
-    // --- Parametri per ImGui::PlotLines ---
     const char *graph_label = "##label";
-    // Il puntatore è lo stesso, ma l'offset farà iniziare ImGui da un punto
-    // diverso
+
     const float *values = array.data();
 
-    // Calcola min/max SOLO sulla finestra di dati visibile. Questo è un enorme
-    // guadagno!
     float min_val = 0.0f;
     float max_val = 0.0f;
-    // Prendi un iteratore che punta all'inizio dei dati che ci interessano
     auto start_it = array.begin();
     auto end_it = array.end();
 
@@ -122,20 +116,19 @@ template <typename T, typename M>
   }
 }
 
-
-template <typename T,typename M>
-void Comp<T,M>::setElementsByFile(const std::string &filePath, int *a, int *b,
-                       std::vector<M> *m) {
+template <typename T, typename M>
+void Comp<T, M>::setElementsByFile(const std::string &filePath, int *a, int *b,
+                                   std::vector<M> *m) {
 
   std::filesystem::path filePath2(filePath);
 
   if (!std::filesystem::exists(filePath)) {
-    throw std::runtime_error("File di training non trovato: " +
-                             filePath2.string());
+    throw std::runtime_error("File training: " + filePath2.string() +
+                             " not found");
   }
   std::ifstream inFile(filePath);
   if (!inFile.is_open()) {
-    throw std::runtime_error("Impossibile aprire il file per la lettura: " +
+    throw std::runtime_error("Cannot open file for reading: " +
                              filePath2.string());
   }
 
@@ -143,20 +136,21 @@ void Comp<T,M>::setElementsByFile(const std::string &filePath, int *a, int *b,
 
   if (!(inFile >> numRows >> numColumns)) {
     throw std::runtime_error(
-        "Formato file non valido: impossibile leggere le dimensioni da " +
+        "Invalid file format: unable to read dimensions from " +
         filePath2.string());
   }
 
   std::vector<M> matrix;
-  M  element;
+  M element;
 
   while (inFile >> element) {
     matrix.push_back(element);
   }
   if (!inFile.eof() && inFile.fail()) {
 
-    throw std::runtime_error("Errore: il file contiene dati non validi o in un formato non corretto.");
-}
+    throw std::runtime_error(
+        "Error: The file contains invalid data or is in an incorrect format.");
+  }
 
   inFile.close();
   *a = numRows;

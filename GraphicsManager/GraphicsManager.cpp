@@ -12,14 +12,14 @@ GraphicsManager::GraphicsManager() { initialize(); }
 GraphicsManager::~GraphicsManager() { shutdown(); }
 
 void GraphicsManager::initialize() {
-  ///check if this function initialize() has been called
+  /// check if this function initialize() has been called
   if (isInitialized_) {
     return;
   }
-///tries to initialize the video, timer, and game controller subsystems
+  /// tries to initialize the video, timer, and game controller subsystems
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) !=
       0) {
-    throw std::runtime_error(std::string("Errore SDL: ") + SDL_GetError());
+    throw std::runtime_error(std::string("Error SDL: ") + SDL_GetError());
   }
 
   const char *glsl_version = "#version 130"; // OpenGL 3.0+
@@ -28,32 +28,31 @@ void GraphicsManager::initialize() {
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 
-
-///creazione della finestra
+  /// creazione della finestra
   window_ = SDL_CreateWindow("Hopfield Network", SDL_WINDOWPOS_CENTERED,
                              SDL_WINDOWPOS_CENTERED, 1280, 720,
                              SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
   if (!window_) {
-    throw std::runtime_error(std::string("Errore SDL_CreateWindow: ") +
+    throw std::runtime_error(std::string("Error SDL_CreateWindow: ") +
                              SDL_GetError());
   }
 
   glContext_ = SDL_GL_CreateContext(window_);
   if (!glContext_) {
-    throw std::runtime_error(std::string("Errore SDL_GL_CreateContext: ") +
+    throw std::runtime_error(std::string("Error SDL_GL_CreateContext: ") +
                              SDL_GetError());
   }
 
-  //collegamento tra window e glContext
+  // Connection between window and glContext
   SDL_GL_MakeCurrent(window_, glContext_);
-  SDL_GL_SetSwapInterval(1); // Abilita VSync (vengono letti gli Hz del computer)
+  SDL_GL_SetSwapInterval(1); // Enable VSync (computer's refresh rate is read)
 
-  //Dear ImGui
+  // Dear ImGui
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   io_ = &ImGui::GetIO();
-  io_->ConfigFlags |=
-      ImGuiConfigFlags_NavEnableKeyboard;
+  io_->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+  io_->IniFilename = nullptr;
 
   ImGui::StyleColorsDark();
 
@@ -62,8 +61,6 @@ void GraphicsManager::initialize() {
 
   isInitialized_ = true;
 }
-
-
 
 bool GraphicsManager::beginFrame(std::vector<std::atomic<float> *> kill) {
   if (!isInitialized_) {
@@ -75,8 +72,9 @@ bool GraphicsManager::beginFrame(std::vector<std::atomic<float> *> kill) {
     ImGui_ImplSDL2_ProcessEvent(&event);
 
     if ((event.type == SDL_WINDOWEVENT &&
-        event.window.event == SDL_WINDOWEVENT_CLOSE &&
-        event.window.windowID == SDL_GetWindowID(window_))||event.type == SDL_QUIT) {
+         event.window.event == SDL_WINDOWEVENT_CLOSE &&
+         event.window.windowID == SDL_GetWindowID(window_)) ||
+        event.type == SDL_QUIT) {
       for (auto &k : kill) {
         *k = -1.0f;
       }
@@ -84,12 +82,12 @@ bool GraphicsManager::beginFrame(std::vector<std::atomic<float> *> kill) {
     }
   }
 
-  // Avvia un nuovo frame di ImGui
+  // Start a new ImGui frame
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplSDL2_NewFrame();
   ImGui::NewFrame();
 
-  return true; 
+  return true;
 }
 
 void GraphicsManager::endFrame() {
@@ -97,10 +95,10 @@ void GraphicsManager::endFrame() {
     return;
   }
 
-  // Rendering di ImGui
+  // ImGui Rendering
   ImGui::Render();
 
-  // Pulizia e rendering su schermo
+  // Cleanup and rendering to screen
   glViewport(0, 0, (int)io_->DisplaySize.x, (int)io_->DisplaySize.y);
   glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);

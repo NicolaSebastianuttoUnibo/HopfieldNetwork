@@ -1,10 +1,9 @@
 
-#include "doctest.h"
 #include "../HopfieldSimulator/HopfieldNetwork.hpp"
+#include "doctest.h"
 
-
-TEST_CASE("Testing the class handling a floating point data sample") {
-  SUBCASE("Checking first one") {
+TEST_CASE("Hopfield Network") {
+  SUBCASE("Two patterns with size 4") {
 
     HN::HopfieldNetwork<int, double> hn;
     std::vector<std::vector<int>> patterns{{-1, 1, 1, -1}, {1, -1, -1, 1}};
@@ -19,9 +18,7 @@ TEST_CASE("Testing the class handling a floating point data sample") {
     CHECK(matrixFromClass.size() == matrix.size());
     for (size_t i = 0; i < matrixFromClass.size(); i++) {
       CAPTURE(i);
-      CHECK(matrixFromClass[i] ==
-            doctest::Approx(
-                matrix[i])); 
+      CHECK(matrixFromClass[i] == doctest::Approx(matrix[i]));
     }
 
     std::vector<int> corr = {1, -1, 1, -1};
@@ -35,10 +32,5 @@ TEST_CASE("Testing the class handling a floating point data sample") {
       CHECK(vec[i] == sol[i]);
     }
 
-
-
-  }///fine test
-
-
-
+  } /// fine test
 }

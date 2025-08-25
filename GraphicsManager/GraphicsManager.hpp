@@ -6,9 +6,8 @@
 #include <string>
 
 #include "../HopfieldSimulator/math/MathDimension.hpp"
-#include <cstdint>
 #include <complex>
-
+#include <cstdint>
 
 struct FileDialogHelper {
   std::string dialogKey;
@@ -16,7 +15,6 @@ struct FileDialogHelper {
   std::string allowedExtensions;
   int maxSelection;
   std::function<void(const std::string &filePath)> onSuccess;
-  std::function<void(const std::string &filePath)> onError;
   std::function<void()> onDialogClose;
 
   FileDialogHelper(std::string key, std::string title, std::string extensions,
@@ -24,10 +22,7 @@ struct FileDialogHelper {
 
   void open();
   void render();
-      
 };
-
-
 
 struct SDL_Window;
 struct ImGuiIO;
@@ -36,7 +31,6 @@ typedef void *SDL_GLContext;
 class GraphicsManager {
 
 private:
-
   SDL_Window *window_ = nullptr;
   SDL_GLContext glContext_ = nullptr;
   ImGuiIO *io_ = nullptr;
@@ -55,7 +49,7 @@ public:
   void shutdown();
 };
 
-template <typename T = int8_t,typename M = double >
+template <typename T = int8_t, typename M = double>
 
 struct Comp {
 
@@ -65,13 +59,12 @@ struct Comp {
                 float size = 300.0f);
 
   void drawPlot(const std::vector<float> &array);
-  void setElementsByFile(const std::string &filePath, int *a, int *b,
-                       std::vector<M> *m);
+  void setElementsByFile(const std::string &filePath, int *numColumns,
+                         int *numRows, std::vector<M> *matrix);
 };
 
 template struct Comp<int8_t, double>;
-template struct Comp<int,double>;
-template struct Comp<std::complex<int8_t>,std::complex<double>>;
-
+template struct Comp<int, double>;
+template struct Comp<std::complex<int8_t>, std::complex<double>>;
 
 #endif // GRAPHICS_MANAGER_H

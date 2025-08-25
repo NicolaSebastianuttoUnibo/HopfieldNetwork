@@ -1,53 +1,104 @@
+# HOPFIELD NETWORK
 
-# HopfieldNetwork
-In questa sezione verrà tratttato come è stato costruito la cartella HopfieldSimulator al cui interno si trovano diverse classi.
-## math/MathDimension.hpp
-Inanzitutto parliamo di una classe che ho dovuto implementare per conoscere la dimensione matematica di un oggetto. Un intero, un double un float, sono contenuti nell'insieme R che è unidimensionale; i numeri complessi sono isomorfi a uno spazio bidimensionali, i quaternioni hanno 4 dimensioni ecc. Dato che le reti di Hopfield possono essere matematicamente generalizzate in cui vengono usati i vertici di un iperbcubo con un lato di lunghezza L, math/MathDimension.hpp permette di ricavare inanzitutto la dimensione di un tipo informatico e allo stesso modo può restituire proprio i vertici di quel tipo.
-## math/Cast.hpp
-Dato che nelle reti di hopfield si lavora sia con i double per la costruzione delle matrici sia con numeri interi per rappresentare lo stato di un singolo pixel: era necessario introdurre una funzione che trasformasse gli std::complex<int> in std::complex<double> e viceversa. Quindi questa classe fa un overload di static_cast della standard library aggiungendo questa conversione.
+In this project, a Hopfield Network is implemented that can be trained with both real and complex bits. The project will generate two executables: one for real numbers and one for complex numbers. With an interactive interface, you can upload images, choose the number of pixels of the squared grid, train with the Hebb algorithm or with the pseudoinverse, and see how the neural network can solve a corrupted pattern.
 
-## math/RandomUtils.hpp
-È il generatore dei numeri causuali
 
-## Training Pattern 
-Questa classe rappresenta il pattern originale con cui verrà addestrata la rete. L'input può essere sia una immagine che si trova in un percorso del proprio PC oppure può essere anche generato un regrid. Dato che l'utente può decidere se caricare una immagine oppure generare una immagine casuale, nel caso in cui l'utente ha inserito una immagine la funzione regrid manterrà i pixel della immagine originale mentre nel caso in cui l'utente voglia un pattern casuale la chiamata regrid genererà un pattern casuale nuovo da zero, in modo da evitare un appesantimento del codice in cui si tenta di ridimensionare un pattern casuale.
+## Instructions for Compilation, Libraries, and Running
 
-## Noisy Pattern
-Noisy Pattern è un pattern che prende in input una immagine e si può aggiungere del rumore.
+To access the project repository on GitHub, ensure Git is installed on your system, and then clone the repository with the following command:
 
-## Evolving Pattern
-Evolving Pattern è il pattern che può essere modificato in modo dinamico per ottenere quindi la sua evoluzione.
+```bash
+git clone git@github.com:NicolaSebastianuttoUnibo/HopfieldNetwork.git
+```
 
-## Hopfield Network
-Questa classe contiene una matrice ch può essere modificata inserendo i pattern che si vuole e si può risolvere un pattern corrotto. Inoltre questa classe può calcolare l'energia intrinseca di un qualsiasi tipo di pattern, originale, corrotto oppure evoluto. Hopfield Network ha due rappresentazioni matriciali: una con Eigen, efficinte per le operazioni matematiche, e l'altra vettoriale, necessaria per importare o esportare i dati di questa matrice, infatti si ha un aggiornamento delle matrici solo nel momento di trascrizione o lettura dei dati.
-In questa classe viene usata la libreria di Eigen che ottimizza le operazioni matriciali:
-quindi a favore della mia funzione che opera solo a numeri reali:
-        ////metodo alternativo per fare la stessa cosa ma funzionante solo per numeri reali e non per numeri complessi 
-             W_ij = Eigen::Matrix<matrix_type, Eigen::Dynamic, Eigen::Dynamic>::Zero(numberNeurons, numberNeurons);
+Next, inside the folder, download the necessary libraries from their GitHub repositories:
+**stb**
+```bash
+git clone git@github.com:nothings/stb.git 
+```
+**imgui**
+```bash
+git clone git@github.com:ocornut/imgui.git  
+```
+```bash
+git clone git@github.com:aiekick/ImGuiFileDialog.git
+```
+```bash
+sudo apt update && sudo apt install libsdl2-dev libgl1-mesa-dev  
+```
+**eigen**
+```bash
+ git clone git@github.com:ceptontech/eigen.git
+ ```
 
-         for (int i = 0; i < numberNeurons; ++i) {
-             for (int j = i; j < numberNeurons; ++j) {
-                
-                 if(status!=nullptr){
-              if(*status<0){
-                   return;
-                 }
-                    count++;
-                    *status = static_cast<float>(count) / totalIteration;
-                 }
-                
-               
-                 if(i==j){continue;}
-                   matrix_type product_p_ij = static_cast<matrix_type>(p[i] * p[j])* norm_factor;
-             W_ij(i,j) += product_p_ij ;
-             W_ij(j,i) += product_p_ij ;
-            
-             }
-         }
-    Questa è stata sostituita con una versione generale che accettasse anche numeri complessi
 
-## Coherence Set Pattern
-CoherenceSetPattern contiene tre pattern; il pattern originale (TrainingPattern),  il pattern corrotto (Noisy Pattern) e il pattern dinamico (Evolving Pattern). Hopfield Network  può essere addestrato (trainNetworkWith..) con un qualsiasi tipo di pattern, l'importante è dare in input la funzione per estrarre i vettori. ResolvePattern prende in input un vettore e con la matrice dei pesi addestrata in grado di rimuovere il rumore presente nelle immagini corrotte. Esiste anche il resolvePattern che prende in input un CPS e modifica EvolvingPattern. 
+After successfully installing the required libraries, you can proceed to compile the program. For a debug build, execute the following command:
 
-## Hopfield Simulator
-Hopfield Simulator  è la classe finale che contiene la classe HopfieldNetork e un array di CPS. Quindi questa classe è in grado di gestire in modo sicuro che il tutto sia facilemente gestibile ed evitare il più possibile comportamenti inaspettati. L'uso di un std::mutex era necessario per evitare che un utente chiami contemporaneamente funzioni che richiedono tanto calcolo computazionale. Ho dovuto separare il regrid in due funzioni: una privata e una pubblica, che attivasse il lock. Questo era necessario perchè all'interno di una funzione pubblica, chiamo regrid ma uscendo dalla funzione il lock si disattiva e quindi era necessario che rimanessi ancora all'interno del blocco
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+```
+
+For a release build, use this command:
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+```
+
+Once the compilation phase is complete, you can build the program that uses real numbers using:
+
+```bash
+cmake --build build  --target hopfield_real
+```
+For the complex one:
+```bash
+cmake --build build  --target hopfield_complex
+```
+If you want to compile the tests, run:
+```bash
+cmake --build build  --target all.t
+```
+
+Every time you run the program in DEBUG mode, I advise you to run this command beforehand:
+
+```bash
+export LSAN_OPTIONS=suppressions=./lsan.supp
+```
+To make this setting permanent, use the command:
+```bash
+echo 'export LSAN_OPTIONS="suppressions=/cartella/dove/hai/salvato/il/progetto/lsan.supp"' >> ~/.bashrc
+```
+Finally, to run the code, for real numbers:
+```bash
+./build/hopfield_real
+```
+For complex numbers:
+```bash
+./build/hopfield_complex
+```
+To run tests:
+```bash
+./build/all.t
+```
+## Commands
+- Parameters can be modified using the sliders.
+- You can upload any image file with <kbd>Open Images</kbd>. To select multiple images, hold <kbd>SHIFT</kbd>
+- You can also generate random images with <kbd>Generate Image</kbd>. If the Noise is zero, the random image will be all black; if noise is 1, it will be a completely random image.
+- If the number of patterns is small, the regrid is automatic; otherwise, remember to press  <kbd>Apply Grid</kbd>
+- You can decide which training type to choose, Hebb (faster but less accurate) or Pseudoinverse (slower but more accurate), by clicking on the training type button: the text will show which type is selected.
+- <kbd>Train Network</kbd> will train the network.
+- <kbd>Save Trained Network</kbd> will open a window where you must choose a name for the training file.
+- <kbd>Open Training</kbd> will open a previously saved training.
+- <kbd>Stop!</kbd> will interrupt the training process.
+- <kbd><</kbd> and <kbd>></kbd> will show the previous and next pattern.
+- <kbd>Check Dimensions</kbd> will verify if you can evolve a pattern by checking dimension compatibility. If you change the grid size by mistake, the program prevents you from evolving the pattern, but this button allows you to proceed if you restore the correct size.
+- <kbd>Delete</kbd> will eliminate the current pattern.
+- <kbd>Corrupt</kbd> will corrupt the pattern based on the noise value: when noise=0, the corrupt image will be the same as the original; when noise=1, the image will be completely random.
+- <kbd>Evolve</kbd> will evolve the corrupted pattern.
+- <kbd>Stop</kbd> will stop the evolving process.
+- The graph is interactive, so you can hover over points to see their values.
+   
+# Credits
+
+Nicola Sebastianutto
+
+August 2025
